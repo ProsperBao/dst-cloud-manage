@@ -1,6 +1,7 @@
 <template>
     <div>
         {{ t('button.hello') }}
+        <n-button>naive-ui</n-button>
     </div>
 </template>
 
