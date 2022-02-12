@@ -3,11 +3,23 @@ import { defineConfig, Plugin } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import resolve from 'vite-plugin-resolve'
 import pkg from '../../package.json'
+import Components from 'unplugin-vue-components/vite'
+import AutoImport from 'unplugin-auto-import/vite'
+import VueI18n from '@intlify/vite-plugin-vue-i18n'
+import Icons from 'unplugin-icons/vite'
+import IconsResolver from 'unplugin-icons/resolver'
+import path from 'path'
+import Pages from 'vite-plugin-pages'
 
 // https://vitejs.dev/config/
 export default defineConfig({
   mode: process.env.NODE_ENV,
   root: __dirname,
+  resolve: {
+    alias: {
+      '~/': `${path.resolve(__dirname, 'src')}/`,
+    },
+  },
   plugins: [
     vue(),
     resolveElectron(
@@ -21,6 +33,36 @@ export default defineConfig({
        * }
        */
     ),
+    Pages({
+      extensions: ['vue'],
+    }),
+    AutoImport({
+      imports: [
+        'vue',
+        'vue-router',
+        'vue-i18n',
+        '@vueuse/core',
+      ],
+      dts: 'src/auto-imports.d.ts',
+    }),
+    Components({ 
+      extensions: ['vue'],
+      include: [/\.vue$/],
+      resolvers: [
+        IconsResolver({
+          prefix: false,
+        }),
+      ],
+      dts: 'src/components.d.ts',
+    }),
+    Icons({
+      autoInstall: true,
+    }),
+    VueI18n({
+      runtimeOnly: true,
+      compositionOnly: true,
+      include: [path.resolve(__dirname, 'locales/**')],
+    }),
   ],
   base: './',
   build: {

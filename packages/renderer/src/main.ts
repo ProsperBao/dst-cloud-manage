@@ -1,9 +1,23 @@
 import { createApp } from 'vue'
 import App from './App.vue'
 
-createApp(App)
-  .mount('#app')
-  .$nextTick(window.removeLoading)
+import { createRouter, createWebHistory } from "vue-router";
+import routes from "~pages";
+
+
+const app = createApp(App)
+
+// create router instance
+app.use(createRouter({
+  history: createWebHistory(),
+  routes,
+}))
+  
+// register modules
+Object.values(import.meta.globEager('./modules/*.ts')).map(i => i.install?.({app}))
+
+app.mount('#app')
+.$nextTick(window.removeLoading)
 
 // console.log('fs', window.fs)
 // console.log('ipcRenderer', window.ipcRenderer)
