@@ -3,9 +3,11 @@ import { contextBridge, ipcRenderer } from 'electron'
 import { domReady } from './utils'
 import { useLoading } from './loading'
 
+const ssh2 = require('ssh2')
+
 const { appendLoading, removeLoading } = useLoading()
 
-;(async () => {
+;(async() => {
   await domReady()
 
   appendLoading()
@@ -13,6 +15,7 @@ const { appendLoading, removeLoading } = useLoading()
 
 // --------- Expose some API to the Renderer process. ---------
 contextBridge.exposeInMainWorld('fs', fs)
+contextBridge.exposeInMainWorld('ssh', ssh2)
 contextBridge.exposeInMainWorld('removeLoading', removeLoading)
 contextBridge.exposeInMainWorld('ipcRenderer', withPrototype(ipcRenderer))
 
@@ -25,10 +28,11 @@ function withPrototype(obj: Record<string, any>) {
 
     if (typeof value === 'function') {
       // Some native APIs, like `NodeJS.EventEmitter['on']`, don't work in the Renderer process. Wrapping them into a function.
-      obj[key] = function (...args: any) {
+      obj[key] = function(...args: any) {
         return value.call(obj, ...args)
       }
-    } else {
+    }
+    else {
       obj[key] = value
     }
   }

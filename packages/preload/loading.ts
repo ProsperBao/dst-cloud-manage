@@ -1,5 +1,4 @@
 
-
 /**
  * https://tobiasahlin.com/spinkit
  * https://connoratherton.com/loaders
@@ -7,7 +6,7 @@
  * https://matejkustec.github.io/SpinThatShit
  */
 export function useLoading() {
-  const className = `loaders-css__square-spin`
+  const className = 'loaders-css__square-spin'
   const styleContent = `
 @keyframes square-spin {
   25% { transform: perspective(100px) rotateX(180deg) rotateY(0); }

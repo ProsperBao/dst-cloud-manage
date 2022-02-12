@@ -1,10 +1,17 @@
 <template>
-    <div>
-        {{ t('button.hello') }}
-        <n-button>naive-ui</n-button>
-    </div>
+  <div>
+    {{ t('button.hello') }}
+    <n-button
+      @click="router.push({
+        path: '/111'
+      })"
+    >
+      naive-ui
+    </n-button>
+  </div>
 </template>
 
 <script lang="ts" setup>
-const {t} = useI18n();
+const router = useRouter()
+const { t } = useI18n()
 </script>

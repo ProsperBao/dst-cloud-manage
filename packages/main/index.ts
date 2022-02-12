@@ -1,6 +1,6 @@
-import { app, BrowserWindow, shell } from 'electron'
 import { release } from 'os'
 import { join } from 'path'
+import { BrowserWindow, app, shell } from 'electron'
 
 // Disable GPU Acceleration for Windows 7
 if (release().startsWith('6.1')) app.disableHardwareAcceleration()
@@ -19,14 +19,16 @@ async function createWindow() {
   win = new BrowserWindow({
     title: 'Main window',
     webPreferences: {
-      preload: join(__dirname, '../preload/index.cjs')
+      preload: join(__dirname, '../preload/index.cjs'),
     },
   })
 
   if (app.isPackaged) {
     win.loadFile(join(__dirname, '../renderer/index.html'))
-  } else {
+  }
+  else {
     // 🚧 Use ['ENV_NAME'] avoid vite:define plugin
+    // eslint-disable-next-line dot-notation
     const url = `http://${process.env['VITE_DEV_SERVER_HOST']}:${process.env['VITE_DEV_SERVER_PORT']}`
 
     win.loadURL(url)
@@ -35,7 +37,7 @@ async function createWindow() {
 
   // Test active push message to Renderer-process
   win.webContents.on('did-finish-load', () => {
-    win?.webContents.send('main-process-message', (new Date).toLocaleString())
+    win?.webContents.send('main-process-message', (new Date()).toLocaleString())
   })
 
   // Make all links open with the browser, not with the application
@@ -62,9 +64,9 @@ app.on('second-instance', () => {
 
 app.on('activate', () => {
   const allWindows = BrowserWindow.getAllWindows()
-  if (allWindows.length) {
+  if (allWindows.length)
     allWindows[0].focus()
-  } else {
+
+  else
     createWindow()
-  }
 })
