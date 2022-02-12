@@ -70,7 +70,6 @@ import {
 import type { UserModule } from '../types'
 
 export const install: UserModule = ({ app }) => {
-    const componentList = ['NButton'];
     const naive = create({
         components: [
             NMessageProvider,
