@@ -1,17 +1,19 @@
 <template>
   <div>
-    {{ t('button.hello') }}
-    <n-button
-      @click="router.push({
-        path: '/111'
-      })"
-    >
-      naive-ui
+    <n-button @click="connect">
+      {{ t('button.save') }}
     </n-button>
   </div>
 </template>
 
 <script lang="ts" setup>
-const router = useRouter()
+import { store } from '../utils/electron-store'
 const { t } = useI18n()
+
+const connect = async() => {
+  await window.ssh.connect(await store.get('connect-data'))
+  const mods = await window.ssh.getServerMods('/root/steamcmd/~/myDSTserver', 1)
+  console.log(mods)
+}
+
 </script>

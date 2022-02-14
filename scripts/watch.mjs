@@ -1,5 +1,5 @@
 import { spawn } from 'child_process'
-import { createServer, build } from 'vite'
+import { build, createServer } from 'vite'
 import electron from 'electron'
 
 /**

@@ -2,8 +2,7 @@ import fs from 'fs'
 import { contextBridge, ipcRenderer } from 'electron'
 import { domReady } from './utils'
 import { useLoading } from './loading'
-
-const ssh2 = require('ssh2')
+import ssh from './ssh'
 
 const { appendLoading, removeLoading } = useLoading()
 
@@ -15,9 +14,9 @@ const { appendLoading, removeLoading } = useLoading()
 
 // --------- Expose some API to the Renderer process. ---------
 contextBridge.exposeInMainWorld('fs', fs)
-contextBridge.exposeInMainWorld('ssh', ssh2)
 contextBridge.exposeInMainWorld('removeLoading', removeLoading)
 contextBridge.exposeInMainWorld('ipcRenderer', withPrototype(ipcRenderer))
+contextBridge.exposeInMainWorld('ssh', ssh)
 
 // `exposeInMainWorld` can't detect attributes and methods of `prototype`, manually patching it.
 function withPrototype(obj: Record<string, any>) {
