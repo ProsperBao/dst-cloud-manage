@@ -7,6 +7,9 @@
     <n-breadcrumb-item>{{ t("breadcrumb.list") }}</n-breadcrumb-item>
   </n-breadcrumb>
   <n-h1>{{ t("title.mod-list") }}</n-h1>
+  <n-button quaternary type="info" @click="forceRefresh">
+    {{ t('button.force-refresh') }}
+  </n-button>
   <n-list bordered>
     <n-list-item v-for="mod in mods" :key="mod">
       <template #prefix>
@@ -15,13 +18,15 @@
           :src="mod.icon"
         />
       </template>
-      <n-thing :title="mod.title" description="description">
-        <template #header-extra>
-          <n-button quaternary type="info" @click="openSteamModDetail(mod.id)">
-            {{ t('button.to-steam') }}
-          </n-button>
-        </template>
-      </n-thing>
+      <n-spin :show="loading.includes(mod.id)">
+        <n-thing :title="mod.title" description="description">
+          <template #header-extra>
+            <n-button quaternary type="info" @click="openSteamModDetail(mod.id)">
+              {{ t('button.to-steam') }}
+            </n-button>
+          </template>
+        </n-thing>
+      </n-spin>
     </n-list-item>
   </n-list>
 </template>
@@ -77,5 +82,10 @@ loadModList()
 
 const openSteamModDetail = (modSteamId: string) => {
   window.open(`https://steamcommunity.com/sharedfiles/filedetails?id=${modSteamId}`)
+}
+
+const forceRefresh = () => {
+  store.delete('mod-list')
+  loadModList()
 }
 </script>

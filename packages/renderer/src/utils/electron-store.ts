@@ -22,4 +22,8 @@ export const store = {
       await invoke('electron-store', 'set', key, val)
     }
   },
+  async delete(key: string) {
+    const { invoke } = window.ipcRenderer
+    await invoke('electron-store', 'delete', key)
+  },
 }

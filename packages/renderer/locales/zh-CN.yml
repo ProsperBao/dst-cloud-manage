@@ -4,6 +4,7 @@ breadcrumb:
   list: 列表
 button:
   back: 返回
+  force-refresh: 强制刷新
   hello: Hi～ DST cloud manage
   save: 保存
   to-steam: 查看模组详情
