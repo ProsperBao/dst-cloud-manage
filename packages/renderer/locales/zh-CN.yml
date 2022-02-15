@@ -1,4 +1,11 @@
+breadcrumb:
+  func: 模组
+  home: DST Cloud Manage
+  list: 列表
 button:
   back: 返回
   hello: Hi～ DST cloud manage
   save: 保存
+  to-steam: 查看模组详情
+title:
+  mod-list: 服务器已安装模组

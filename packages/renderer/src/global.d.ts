@@ -1,4 +1,4 @@
-import type { SSHOperateType } from '../../preload/ssh'
+import type { SSHOperateType } from '../../preload/expose-api/index'
 
 export { }
 

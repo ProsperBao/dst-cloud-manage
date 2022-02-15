@@ -25,6 +25,7 @@ import {
   NFormItem,
   NGrid,
   NGridItem,
+  NH1,
   NIcon,
   NInput,
   NInputGroup,
@@ -137,6 +138,7 @@ export const install: UserModule = ({ app }) => {
       NTimePicker,
       NBackTop,
       NSkeleton,
+      NH1,
     ],
   })
   app.use(naive)

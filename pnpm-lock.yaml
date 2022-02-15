@@ -8,6 +8,7 @@ specifiers:
   '@types/ssh2': ^0.5.51
   '@vitejs/plugin-vue': ^2.1.0
   '@vueuse/core': ^7.6.1
+  axios: ^0.26.0
   dayjs: ^1.10.7
   electron: 16.0.8
   electron-builder: ^22.14.5
@@ -40,6 +41,7 @@ devDependencies:
   '@types/ssh2': registry.npmmirror.com/@types/ssh2/0.5.51
   '@vitejs/plugin-vue': registry.npmmirror.com/@vitejs/plugin-vue/2.2.0_vite@2.8.1+vue@3.2.30
   '@vueuse/core': registry.npmmirror.com/@vueuse/core/7.6.1_vue@3.2.30
+  axios: registry.npmmirror.com/axios/0.26.0
   dayjs: registry.npmmirror.com/dayjs/1.10.7
   electron: registry.npmmirror.com/electron/16.0.8
   electron-builder: registry.npmmirror.com/electron-builder/22.14.13
@@ -1462,6 +1464,16 @@ packages:
     name: available-typed-arrays
     version: 1.0.5
     engines: {node: '>= 0.4'}
+    dev: true
+
+  registry.npmmirror.com/axios/0.26.0:
+    resolution: {integrity: sha512-lKoGLMYtHvFrPVt3r+RBMp9nh34N0M8zEfCWqdWZx6phynIEhQqAdydpyBAAG211zlhX9Rgu08cOamy6XjE5Og==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/axios/-/axios-0.26.0.tgz}
+    name: axios
+    version: 0.26.0
+    dependencies:
+      follow-redirects: registry.npmmirror.com/follow-redirects/1.14.8
+    transitivePeerDependencies:
+      - debug
     dev: true
 
   registry.npmmirror.com/babel-walk/3.0.0-canary-5:
@@ -3351,6 +3363,18 @@ packages:
     resolution: {integrity: sha512-WIWGi2L3DyTUvUrwRKgGi9TwxQMUEqPOPQBVi71R96jZXJdFskXEmf54BoZaS1kknGODoIGASGEzBUYdyMCBJg==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/flatted/-/flatted-3.2.5.tgz}
     name: flatted
     version: 3.2.5
+    dev: true
+
+  registry.npmmirror.com/follow-redirects/1.14.8:
+    resolution: {integrity: sha512-1x0S9UVJHsQprFcEC/qnNzBLcIxsjAV905f/UkQxbclCsoTWlacCNOpQa/anodLl2uaEKFhfWOvM2Qg77+15zA==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/follow-redirects/-/follow-redirects-1.14.8.tgz}
+    name: follow-redirects
+    version: 1.14.8
+    engines: {node: '>=4.0'}
+    peerDependencies:
+      debug: '*'
+    peerDependenciesMeta:
+      debug:
+        optional: true
     dev: true
 
   registry.npmmirror.com/foreach/2.0.5:
