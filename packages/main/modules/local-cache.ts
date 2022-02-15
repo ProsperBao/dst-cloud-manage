@@ -9,6 +9,7 @@ export interface LocalCache {
 export interface ModInfo {
   title?: string
   description?: string
+  steamDescription?: string
   id: string
   icon?: string
   size?: string
@@ -17,10 +18,14 @@ export interface ModInfo {
 }
 
 export const localCache = {
-  async getModInfoBySteamModId(modId: string): Promise<string> {
+  async getModInfoBySteamModId(modId: string, steamLanguage = 'schinese'): Promise<string> {
     const modInfoUrl = `https://steamcommunity.com/sharedfiles/filedetails?id=${modId}`
     try {
-      const { data } = await axios.get(modInfoUrl)
+      const { data } = await axios.get(modInfoUrl, {
+        headers: {
+          Cookie: `Steam_Language=${steamLanguage}`,
+        },
+      })
       return JSON.stringify(localCache.handleModInfoByHtml(data, modId))
     }
     catch (e) {
@@ -35,13 +40,15 @@ export const localCache = {
    */
   handleModInfoByHtml(htmlContent: string, modId: string): ModInfo {
     const sizeAndDate = [...htmlContent.matchAll(/<div class="detailsStatRight">(.*?)<\/div>/g)].map(i => i[1])
+    const alternativeIcon = htmlContent.match(/<img id="previewImage" class="workshopItemPreviewImageEnlargeable" src="(.*?)"/)?.[1] ?? ''
     return {
       id: modId,
       title: htmlContent.match(/<div class="workshopItemTitle">(.*?)<\/div>/)?.[1] ?? '',
-      icon: htmlContent.match(/class="workshopItemPreviewImageMain" src="(.*?)"/)?.[1] ?? '',
-      size: sizeAndDate?.[1] || '0.0KB',
-      lastUpdateDate: sizeAndDate?.[2] || '0',
-      releaseDate: sizeAndDate?.[3] || '0',
+      icon: htmlContent.match(/class="workshopItemPreviewImageMain" src="(.*?)"/)?.[1] ?? alternativeIcon ?? '',
+      size: sizeAndDate?.[0] || '',
+      releaseDate: sizeAndDate?.[1] || '',
+      lastUpdateDate: sizeAndDate?.[2] || '',
+      steamDescription: htmlContent.match(/<div class="workshopItemDescription" id="highlightContent">(.*?)<\/div>/)?.[1] ?? '',
     }
   },
 }
