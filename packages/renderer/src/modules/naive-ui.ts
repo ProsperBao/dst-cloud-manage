@@ -23,6 +23,7 @@ import {
   NDrawerContent,
   NDropdown,
   NElement,
+  NEllipsis,
   NForm,
   NFormItem,
   NGrid,
@@ -48,6 +49,7 @@ import {
   NPopover,
   NProgress,
   NRadio,
+  NRadioButton,
   NRadioGroup,
   NResult,
   NRow,
@@ -136,6 +138,7 @@ export const install: UserModule = ({ app }) => {
       NLoadingBarProvider,
       NModal,
       NUpload,
+      NRadioButton,
       NText,
       NTree,
       NSpin,
@@ -145,6 +148,7 @@ export const install: UserModule = ({ app }) => {
       NH1,
       NCollapse,
       NCollapseItem,
+      NEllipsis,
     ],
   })
   app.use(naive)

@@ -7,8 +7,6 @@ import resolve from 'vite-plugin-resolve'
 import Components from 'unplugin-vue-components/vite'
 import AutoImport from 'unplugin-auto-import/vite'
 import VueI18n from '@intlify/vite-plugin-vue-i18n'
-import Icons from 'unplugin-icons/vite'
-import IconsResolver from 'unplugin-icons/resolver'
 import Pages from 'vite-plugin-pages'
 import Layouts from 'vite-plugin-vue-layouts'
 import pkg from '../../package.json'
@@ -55,16 +53,7 @@ export default defineConfig({
     Components({
       extensions: ['vue'],
       include: [/\.vue$/],
-      resolvers: [
-        IconsResolver({
-          prefix: false,
-        }),
-      ],
       dts: 'src/components.d.ts',
-    }),
-
-    Icons({
-      autoInstall: true,
     }),
 
     VueI18n({

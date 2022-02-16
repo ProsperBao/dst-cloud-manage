@@ -73,8 +73,8 @@ export const useModStore = defineStore('mod', {
     },
     async detectModListChange(mods: string[]) {
       const queue = []
-      for (let i = 0; i < mods.length; i += 5)
-        queue.push(mods.slice(i, i + 5))
+      for (let i = 0; i < mods.length; i += 3)
+        queue.push(mods.slice(i, i + 3))
       for (const queueItem of queue)
         await Promise.all(queueItem.map(id => (async() => await this.detectModInfoChange(id))()))
     },

@@ -1,7 +1,15 @@
+alert:
+  connect-error: 服务器连接失败
+  connect-success: 服务器连接成功
+  warring: 请注意
+  warring-server-content: 请注意，软件不会校验端口和域名是否有效，是否有效请点击 "连接测试"
 breadcrumb:
+  config: 配置
   func: 模组
   home: DST Cloud Manage
   list: 列表
+  mod: 模组
+  server: 服务器
 button:
   back: 返回
   force-refresh: 强制刷新
@@ -12,8 +20,22 @@ describe:
   last-update-date: 最后更新时间
   release-date: 发布时间
   size: 大小
+form:
+  host: 服务器地址
+  host-required: 请输入服务器地址
+  password: 密码
+  password-required: 请输入密码
+  port: 端口
+  port-pattern: 请输入正确的端口
+  port-required: 请输入端口
+  username: 用户名
+  username-required: 请输入用户名
+menu:
+  home: 首页
+  mod: 模组
+  server: 服务器
 other:
   dateFormat: YYYY-MM-DD HH:mm:ss
-  steamLanguage: 'schinese'
+  steamLanguage: schinese
 title:
   mod-list: 服务器已安装模组

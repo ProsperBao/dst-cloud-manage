@@ -1,63 +1,71 @@
 <template>
-  <n-breadcrumb>
-    <n-breadcrumb-item href="/">
-      {{ t("breadcrumb.home") }}
-    </n-breadcrumb-item>
-    <n-breadcrumb-item>{{ t("breadcrumb.func") }}</n-breadcrumb-item>
-    <n-breadcrumb-item>{{ t("breadcrumb.list") }}</n-breadcrumb-item>
-  </n-breadcrumb>
-  <n-h1>{{ t("title.mod-list") }}</n-h1>
-  <n-button quaternary type="info" @click="forceRefresh">
-    {{ t('button.force-refresh') }}
-  </n-button>
-  <n-list bordered>
-    <n-list-item v-for="mod in modStore.modList" :key="mod">
-      <n-spin :show="modStore.loading.includes(mod.id)">
-        <n-thing>
-          <template #avatar>
-            <n-avatar
-              :size="100"
-              :src="mod.icon"
-            />
-          </template>
-          <template #header>
-            <n-popover trigger="hover">
-              <template #trigger>
-                <span @click="openSteamModDetail(mod.id)">
-                  {{ mod.title }}
-                </span>
-              </template>
-              <span>{{ t('button.to-steam') }}</span>
-            </n-popover>
-          </template>
-          <template #description>
-            <n-text tag="div" depth="3">
-              {{ t("describe.size") }}: {{ mod.size }}
-            </n-text>
-            <n-text v-if="!!mod.releaseDate" tag="div" depth="3">
-              {{ t("describe.release-date") }}: {{ mod.releaseDate }}
-            </n-text>
-            <n-text v-if="!!mod.lastUpdateDate" tag="div" depth="3">
-              {{ t("describe.last-update-date") }}: {{ mod.lastUpdateDate }}
-            </n-text>
-          </template>
-          <n-collapse>
-            <n-collapse-item title="查看Steam简介" name="1">
-              <div class="steam-desc-container" v-html="mod.steamDescription" />
-            </n-collapse-item>
-          </n-collapse>
-        </n-thing>
-      </n-spin>
-    </n-list-item>
-  </n-list>
+  <div class="mod-list-container">
+    <n-breadcrumb>
+      <n-breadcrumb-item href="/">
+        {{ t("breadcrumb.home") }}
+      </n-breadcrumb-item>
+      <n-breadcrumb-item>{{ t("breadcrumb.mod") }}</n-breadcrumb-item>
+      <n-breadcrumb-item>{{ t("breadcrumb.list") }}</n-breadcrumb-item>
+    </n-breadcrumb>
+    <n-h1>{{ t("title.mod-list") }}</n-h1>
+    <n-button quaternary type="info" @click="forceRefresh">
+      {{ t('button.force-refresh') }}
+    </n-button>
+    <n-back-top :right="40" />
+    <n-list bordered>
+      <n-list-item v-for="mod in modStore.modList" :key="mod">
+        <n-spin :show="modStore.loading.includes(mod.id)">
+          <n-thing>
+            <template #avatar>
+              <n-avatar
+                :size="100"
+                :src="mod.icon"
+              />
+            </template>
+            <template #header>
+              <n-ellipsis :line-clamp="1" @click="openSteamModDetail(mod.id)">
+                {{ mod.title }}
+              </n-ellipsis>
+            </template>
+            <template #header-extra>
+              <n-tooltip placement="bottom" trigger="hover">
+                <template #trigger>
+                  <n-icon size="22" @click="openSteamModDetail(mod.id)">
+                    <ArrowRedoCircleOutline />
+                  </n-icon>
+                </template>
+                <span>{{ t('button.to-steam') }}</span>
+              </n-tooltip>
+            </template>
+            <template #description>
+              <n-text tag="div" depth="3">
+                {{ t("describe.size") }}: {{ mod.size }}
+              </n-text>
+              <n-text v-if="!!mod.releaseDate" tag="div" depth="3">
+                {{ t("describe.release-date") }}: {{ mod.releaseDate }}
+              </n-text>
+              <n-text v-if="!!mod.lastUpdateDate" tag="div" depth="3">
+                {{ t("describe.last-update-date") }}: {{ mod.lastUpdateDate }}
+              </n-text>
+            </template>
+            <n-collapse>
+              <n-collapse-item title="查看Steam简介" name="1">
+                <div class="steam-desc-container" v-html="mod.steamDescription" />
+              </n-collapse-item>
+            </n-collapse>
+          </n-thing>
+        </n-spin>
+      </n-list-item>
+    </n-list>
+  </div>
 </template>
 
 <script lang="ts" setup>
+import { ArrowRedoCircleOutline } from '@vicons/ionicons5'
 import { store } from '../../utils/electron-store'
 import { useModStore } from '../../store/mod'
 
 const { t } = useI18n()
-
 const modStore = useModStore()
 
 const forceRefresh = () => modStore.forceUpdateModInfo()
@@ -79,5 +87,8 @@ loadModList()
 }
 .steam-desc-container img {
   max-width: 100%;
+}
+.mod-list-container {
+  min-width: 500px;
 }
 </style>

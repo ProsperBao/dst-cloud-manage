@@ -14,10 +14,7 @@
 const router = useRouter()
 const { t } = useI18n()
 
-const back = () => {
-  console.log(window.ssh)
-  router.push('/')
-}
+const back = () => router.back()
 </script>
 
 <style>
