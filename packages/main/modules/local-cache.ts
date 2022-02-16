@@ -1,20 +1,11 @@
 import { ipcMain } from 'electron'
 
+import type { ModInfo } from '../../renderer/src/store/mod'
+
 const axios = require('axios')
 
 export interface LocalCache {
   getModInfoBySteamModId: (modId: string) => Promise<string>
-}
-
-export interface ModInfo {
-  title?: string
-  description?: string
-  steamDescription?: string
-  id: string
-  icon?: string
-  size?: string
-  lastUpdateDate?: string
-  releaseDate?: string
 }
 
 export const localCache = {
@@ -49,6 +40,7 @@ export const localCache = {
       releaseDate: sizeAndDate?.[1] || '',
       lastUpdateDate: sizeAndDate?.[2] || '',
       steamDescription: htmlContent.match(/<div class="workshopItemDescription" id="highlightContent">(.*?)<\/div>/)?.[1] ?? '',
+      lastDetectionTime: new Date().getTime().toString(),
     }
   },
 }

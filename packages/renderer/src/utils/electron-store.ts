@@ -3,7 +3,7 @@ export const store = {
     const { invoke } = window.ipcRenderer
     let value = await invoke('electron-store', 'get', key)
     try {
-      value = JSON.parse(value)
+      value = JSON.parse(value || '{}')
     }
     catch (err) {
       console.log(err)
