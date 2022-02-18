@@ -9,6 +9,8 @@ import AutoImport from 'unplugin-auto-import/vite'
 import VueI18n from '@intlify/vite-plugin-vue-i18n'
 import Pages from 'vite-plugin-pages'
 import Layouts from 'vite-plugin-vue-layouts'
+import Icons from 'unplugin-icons/vite'
+import IconsResolver from 'unplugin-icons/resolver'
 import pkg from '../../package.json'
 
 // https://vitejs.dev/config/
@@ -54,12 +56,23 @@ export default defineConfig({
       extensions: ['vue'],
       include: [/\.vue$/],
       dts: 'src/components.d.ts',
+      resolvers: [
+        // auto import icons
+        IconsResolver({
+          prefix: false,
+          // enabledCollections: ['carbon']
+        }),
+      ],
     }),
 
     VueI18n({
       runtimeOnly: true,
       compositionOnly: true,
       include: [path.resolve(__dirname, 'locales/**')],
+    }),
+
+    Icons({
+      autoInstall: true,
     }),
 
     Layouts(),

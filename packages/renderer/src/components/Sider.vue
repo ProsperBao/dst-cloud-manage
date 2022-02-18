@@ -10,17 +10,19 @@
 
 <script lang="ts" setup>
 import { RouterLink } from 'vue-router'
-import { ExtensionPuzzleSharp, HomeSharp, ServerSharp } from '@vicons/ionicons5'
-import { NIcon } from 'naive-ui'
+import IconTranslate from '~icons/carbon/translate'
+import IconHome from '~icons/carbon/home'
+import IconModelAlt from '~icons/carbon/model-alt'
+import IconBareMetalServer from '~icons/carbon/bare-metal-server'
+import IconSettings from '~icons/carbon/settings'
 
 defineProps<{ collapsed: Boolean }>()
 
 const { t } = useI18n()
 
 const activeKey = ref<string>('go-mod-home')
-
-function renderIcon(icon) {
-  return () => h(NIcon, null, { default: () => h(icon) })
+function renderIcon(icon: any) {
+  return () => h(icon)
 }
 
 const menuOptions = [
@@ -36,7 +38,7 @@ const menuOptions = [
         { default: () => t('menu.home') },
       ),
     key: 'go-mod-home',
-    icon: renderIcon(HomeSharp),
+    icon: renderIcon(IconHome),
   },
   {
     label: () =>
@@ -50,21 +52,42 @@ const menuOptions = [
         { default: () => t('menu.mod') },
       ),
     key: 'go-mod-list',
-    icon: renderIcon(ExtensionPuzzleSharp),
+    icon: renderIcon(IconModelAlt),
   },
   {
-    label: () =>
-      h(
-        RouterLink,
-        {
-          to: {
-            path: '/server',
-          },
-        },
-        { default: () => t('menu.server') },
-      ),
-    key: 'go-server-config',
-    icon: renderIcon(ServerSharp),
+    label: t('menu.config'),
+    key: 'config',
+    icon: renderIcon(IconSettings),
+    children: [
+      {
+        label: () =>
+          h(
+            RouterLink,
+            {
+              to: {
+                path: '/config/server',
+              },
+            },
+            { default: () => t('menu.server') },
+          ),
+        key: 'go-config-server',
+        icon: renderIcon(IconBareMetalServer),
+      },
+      {
+        label: () =>
+          h(
+            RouterLink,
+            {
+              to: {
+                path: '/config/translate',
+              },
+            },
+            { default: () => t('menu.translate') },
+          ),
+        key: 'go-config-translate',
+        icon: renderIcon(IconTranslate),
+      },
+    ],
   },
 ]
 </script>

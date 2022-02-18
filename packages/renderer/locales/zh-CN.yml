@@ -1,6 +1,10 @@
 alert:
   connect-error: 服务器连接失败
   connect-success: 服务器连接成功
+  info: 请悉知
+  info-translate-content-part1: '如果没有 appid 以及密钥，可以点击 '
+  info-translate-content-part2: 百度翻译 API
+  info-translate-content-part3: 注册，并申请，目前仅支持百度翻译。
   warring: 请注意
   warring-server-content: 请注意，软件不会校验端口和域名是否有效，是否有效请点击 "连接测试"
 breadcrumb:
@@ -10,17 +14,31 @@ breadcrumb:
   list: 列表
   mod: 模组
   server: 服务器
+  translate: 翻译
 button:
   back: 返回
   force-refresh: 强制刷新
-  hello: Hi～ DST cloud manage
   save: 保存
   to-steam: 点击查看模组详情
+  translate: 翻译
+  translate-mod: 翻译模组
 describe:
   last-update-date: 最后更新时间
   release-date: 发布时间
   size: 大小
-form:
+menu:
+  config: 配置
+  home: 首页
+  mod: 模组
+  server: 服务器
+  translate: 翻译
+other:
+  dateFormat: YYYY-MM-DD HH:mm:ss
+  steamLanguage: schinese
+save:
+  connect-fail: 请先点击连接测试按钮，待成功之后即可保存
+  success: 保存成功
+server:
   host: 服务器地址
   host-required: 请输入服务器地址
   password: 密码
@@ -30,12 +48,14 @@ form:
   port-required: 请输入端口
   username: 用户名
   username-required: 请输入用户名
-menu:
-  home: 首页
-  mod: 模组
-  server: 服务器
-other:
-  dateFormat: YYYY-MM-DD HH:mm:ss
-  steamLanguage: schinese
 title:
   mod-list: 服务器已安装模组
+translate:
+  bd-appid: 百度翻译 appid
+  bd-appid-required: 请输入百度翻译 appid
+  bd-key: 百度翻译密钥
+  bd-key-required: 请输入百度翻译密钥
+  from: 源语言
+  from-required: 请选择翻译源语言
+  to: 目标语言
+  to-required: 请选择翻译目标语言

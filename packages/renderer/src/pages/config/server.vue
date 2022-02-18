@@ -5,8 +5,8 @@
         <n-breadcrumb-item href="/">
           {{ t("breadcrumb.home") }}
         </n-breadcrumb-item>
-        <n-breadcrumb-item>{{ t("breadcrumb.server") }}</n-breadcrumb-item>
         <n-breadcrumb-item>{{ t("breadcrumb.config") }}</n-breadcrumb-item>
+        <n-breadcrumb-item>{{ t("breadcrumb.server") }}</n-breadcrumb-item>
       </n-breadcrumb>
       <n-alert :title="t('alert.warring')" type="warning">
         {{ t('alert.warring-server-content') }}
@@ -24,19 +24,19 @@
             maxWidth: '640px'
           }"
         >
-          <n-form-item :label="t('form.host')" path="host">
-            <n-input v-model:value="model.host" :placeholder="t('form.host-required')" />
+          <n-form-item :label="t('server.host')" path="host">
+            <n-input v-model:value="model.host" :placeholder="t('server.host-required')" />
           </n-form-item>
-          <n-form-item :label="t('form.port')" path="port">
-            <n-input v-model:value="model.port" :placeholder="t('form.port-required')" />
+          <n-form-item :label="t('server.port')" path="port">
+            <n-input v-model:value="model.port" :placeholder="t('server.port-required')" />
           </n-form-item>
-          <n-form-item :label="t('form.username')" path="username">
-            <n-input v-model:value="model.username" :placeholder="t('form.username-required')" />
+          <n-form-item :label="t('server.username')" path="username">
+            <n-input v-model:value="model.username" :placeholder="t('server.username-required')" />
           </n-form-item>
-          <n-form-item :label="t('form.password')" path="password">
+          <n-form-item :label="t('server.password')" path="password">
             <n-input
               v-model:value="model.password" type="password"
-              show-password-on="mousedown" :placeholder="t('form.password-required')"
+              show-password-on="mousedown" :placeholder="t('server.password-required')"
             />
           </n-form-item>
           <div style="display: flex; justify-content: flex-end;">
@@ -72,16 +72,16 @@ const model = ref({
 })
 const rules = ref({
   host: [
-    { required: true, message: t('form.host-required') },
+    { required: true, message: t('server.host-required') },
   ],
   port: [
-    { required: true, message: t('form.port-required') },
+    { required: true, message: t('server.port-required') },
   ],
   username: [
-    { required: true, message: t('form.username-required') },
+    { required: true, message: t('server.username-required') },
   ],
   password: [
-    { required: true, message: t('form.password-required') },
+    { required: true, message: t('server.password-required') },
   ],
 })
 
@@ -93,10 +93,16 @@ const connectMap = [
 ]
 
 function validateDataSave(e: Event) {
+  if (connectFlag.value !== 1)
+    message.error(t('save.connect-fail'))
+
   e.preventDefault()
   formRef.value.validate((errors: any) => {
-    if (!errors)
-      console.log('验证成功')
+    if (!errors) {
+      const val = toRaw(model.value)
+      store.set('config-server', toRaw({ ...val, port: parseInt(val.port) }))
+      message.success(t('save.success'))
+    }
   })
 }
 function validateServerConnect(e: Event) {
@@ -118,9 +124,10 @@ function validateServerConnect(e: Event) {
 }
 
 (async() => {
-  const val = await store.get('connect-data')
-  model.value = { ...val, port: val.port.toString() }
+  const val = await store.get('config-server')
+  model.value = { ...val, port: val.port?.toString() }
 })()
+
 </script>
 
 <style>

@@ -1,6 +1,9 @@
 import { ipcMain } from 'electron'
 
-import type { ModInfo } from '../../renderer/src/store/mod'
+import { MD5 } from 'crypto-js'
+
+import type { Translate } from 'packages/renderer/src/store/config'
+import type { Mod } from '../../renderer/src/store/mod'
 
 const axios = require('axios')
 
@@ -9,18 +12,21 @@ export interface LocalCache {
 }
 
 export const localCache = {
-  async getModInfoBySteamModId(modId: string, steamLanguage = 'schinese'): Promise<string> {
-    const modInfoUrl = `https://steamcommunity.com/sharedfiles/filedetails?id=${modId}`
+  async getModInfoBySteamModId(id: string, steamLanguage = 'schinese'): Promise<string> {
+    const modInfoUrl = `https://steamcommunity.com/sharedfiles/filedetails?id=${id}`
     try {
       const { data } = await axios.get(modInfoUrl, {
         headers: {
-          Cookie: `Steam_Language=${steamLanguage}`,
+          'Cookie': `Steam_Language=${steamLanguage}`,
+          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.69 Safari/537.36 Edg/95.0.1020.53',
         },
+        timeout: 5000,
       })
-      return JSON.stringify(localCache.handleModInfoByHtml(data, modId))
+      return JSON.stringify(localCache.handleModInfoByHtml(data, id))
     }
     catch (e) {
-      return ''
+      console.log(e.toJSON())
+      return JSON.stringify({ id })
     }
   },
   /**
@@ -29,7 +35,7 @@ export const localCache = {
    * @param modId mod id
    * @returns handled mod info
    */
-  handleModInfoByHtml(htmlContent: string, modId: string): ModInfo {
+  handleModInfoByHtml(htmlContent: string, modId: string): Mod {
     const sizeAndDate = [...htmlContent.matchAll(/<div class="detailsStatRight">(.*?)<\/div>/g)].map(i => i[1])
     const alternativeIcon = htmlContent.match(/<img id="previewImage" class="workshopItemPreviewImageEnlargeable" src="(.*?)"/)?.[1] ?? ''
     return {
@@ -42,6 +48,37 @@ export const localCache = {
       steamDescription: htmlContent.match(/<div class="workshopItemDescription" id="highlightContent">(.*?)<\/div>/)?.[1] ?? '',
       lastDetectionTime: new Date().getTime().toString(),
     }
+  },
+  async translate(text: string, isHtml = false, { from, to, appid, key }: Translate) {
+    const temp: string[] = []
+    let transBefore = text
+    if (isHtml) {
+      transBefore = transBefore.replace(/<[^>]+>/g, (tag) => {
+        temp.push(tag)
+        return '↩️'
+      })
+    }
+    const salt = (new Date()).getTime()
+    const str = appid + transBefore + salt + key
+    const sign = MD5(str).toString()
+
+    const data = {
+      q: transBefore,
+      appid,
+      salt,
+      from,
+      to,
+      sign,
+    }
+    const res = await axios.get('http://api.fanyi.baidu.com/api/trans/vip/translate', { params: data })
+    let transAfter = res.data.trans_result[0].dst
+    if (isHtml) {
+      temp.forEach((tag) => {
+        transAfter = transAfter.replace('↩️', tag)
+      })
+    }
+
+    return transAfter
   },
 }
 ipcMain.handle(

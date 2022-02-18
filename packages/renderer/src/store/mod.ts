@@ -1,9 +1,12 @@
 import { defineStore } from 'pinia'
 import { i18n } from '../modules/i18n'
-import { localCache } from '../utils/local-cache'
 import { store } from '../utils/electron-store'
+import { localCache } from '../utils/local-cache'
+import { sleep } from '../utils/time'
 
-export interface ModInfo {
+const MAX_DETECTION_NUM = 3
+
+export interface Mod {
   title?: string
   description?: string
   steamDescription?: string
@@ -13,85 +16,133 @@ export interface ModInfo {
   lastUpdateDate?: string
   releaseDate?: string
   lastDetectionTime?: string
+  [key: string]: string | undefined
 }
+
 export const useModStore = defineStore('mod', {
   state: (): {
-    cache: Record<string, ModInfo>
+    _list: Record<string, Mod>
     loading: string[]
-    serverModList: string[]
+    serverList: string[]
   } => ({
-    cache: {},
+    _list: {},
     loading: [],
-    serverModList: [],
+    serverList: [],
   }),
   getters: {
-    modList: (state): ModInfo[] => {
-      return state.serverModList.map((id: string) => state.cache[id] || { id })
+    list: (state): Mod[] => {
+      console.log(state._list)
+      return state.serverList.map((id: string) => state._list[id] || { id })
     },
   },
   actions: {
-    async getModInfoByWorkshopId(id: string) {
+    /**
+     * Get mod information from steam workshop
+     * @param id steam workshop id
+     * @returns mod info
+     */
+    async updateMod(id: string): Promise<Mod> {
       const steamLanguage = (i18n.global as any).t('other.steamLanguage')
-
-      const mod = await localCache.getModInfoBySteamModId(id, steamLanguage)
-      try {
-        this.$patch({
-          cache: {
-            [id]: JSON.parse(mod),
-          },
-        })
-        store.set(`mod-list-${id}`, this.cache[id])
-      }
-      catch {
-        console.log(`Failed to parse mod info for ${id}`)
-      }
-    },
-    async detectModInfoChange(id: string) {
-      let mod = this.cache[id]
+      let mod: Mod
       this.loading.push(id)
-      // read from cache
-      if (!mod) {
-        try {
-          this.cache[id] = await store.get(`mod-list-${id}`)
-          mod = this.cache[id]
-        }
-        catch {
-          mod = { id }
-        }
+      try {
+        mod = JSON.parse(await localCache.getModInfoBySteamModId(id, steamLanguage))
       }
+      catch (e) {
+        mod = { id }
+      }
+      this.loading = this.loading.filter(i => i !== id)
+      return mod
+    },
+    /**
+     * Whether mod exists or cache is valid
+     * @param id steam workshop id
+     * @returns mod info
+     */
+    async detectMod(id: string, save = true): Promise<Mod> {
+      const mod = this._list[id]
       // whether it is within the cache validity period
-      if (mod.lastDetectionTime) {
+      if (mod?.lastDetectionTime) {
         const lastDetectionTime = Number(mod.lastDetectionTime)
         const now = new Date().getTime()
         if (now - lastDetectionTime < 1000 * 60 * 60 * 12) {
           this.loading = this.loading.filter(i => i !== id)
-          return
+          return mod
         }
       }
-      await this.getModInfoByWorkshopId(id)
-      this.loading = this.loading.filter(i => i !== id)
+      const res = await this.updateMod(id)
+
+      if (save) {
+        this._list[id] = res
+        await store.set('mod-list', this._list)
+      }
+      return res
     },
-    async detectModListChange(mods: string[]) {
-      const queue = []
-      for (let i = 0; i < mods.length; i += 3)
-        queue.push(mods.slice(i, i + 3))
-      for (const queueItem of queue)
-        await Promise.all(queueItem.map(id => (async() => await this.detectModInfoChange(id))()))
+    /**
+     * Detect mod list cache is valid
+     */
+    async detectModList() {
+      const queue: string[][] = []
+      const tempCache: Record<string, Mod> = {}
+
+      for (let i = 0; i < this.serverList.length; i += MAX_DETECTION_NUM)
+        queue.push(this.serverList.slice(i, i + MAX_DETECTION_NUM))
+
+      for (const queueItem of queue) {
+        const res = await Promise.all(queueItem.map(id => this.detectMod(id, false)))
+        console.log(res)
+        res.forEach((mod) => {
+          tempCache[mod.id] = mod
+        })
+        this.$patch({ _list: { ...tempCache } })
+        store.set('mod-list', this._list)
+      }
     },
-    setServerModList(mods: string[]) {
-      this.serverModList = mods
-      this.detectModListChange(mods)
-    },
-    forceUpdateModInfo(id?: string) {
+    /**
+     * Force an update to the cache
+     * @param id mod id
+     */
+    async forceUpdate(id?: string) {
       if (id) {
-        this.cache[id].lastDetectionTime = '0'
-        this.detectModInfoChange(id)
+        this._list[id].lastDetectionTime = '0'
+        this._list[id] = await this.detectMod(id)
       }
       else {
-        this.serverModList.forEach((modId) => {
-          this.cache[modId].lastDetectionTime = '0'
+        this.serverList.forEach((id) => {
+          this._list[id].lastDetectionTime = '0'
         })
-        this.detectModListChange(this.serverModList)
+        await this.detectModList()
+      }
+    },
+    /**
+     * transform mod description
+     * @param id mod id
+     */
+    async translate(id: string) {
+      const mod = { ...this._list[id] }
+      this.loading.push(id)
+      try {
+        mod.title = await localCache.translate(mod.title, false)
+        await sleep(1100)
+        mod.steamDescription = await localCache.translate(mod.steamDescription, true)
+      }
+      catch {
+        console.log(`Failed to translate mod info for ${id}`)
+      }
+      this.$patch({ _list: { [id]: mod } })
+      store.set('mod-list', this._list)
+      this.loading = this.loading.filter(i => i !== id)
+    },
+
+    async initState(serverList: string[]) {
+      this.serverList = serverList
+      const val = await store.get('mod-list')
+      if (!Object.keys(val).length) {
+        this._list = {}
+        this.detectModList()
+      }
+      else {
+        this._list = val
       }
     },
   },

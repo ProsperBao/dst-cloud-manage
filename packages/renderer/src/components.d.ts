@@ -4,6 +4,8 @@
 
 declare module 'vue' {
   export interface GlobalComponents {
+    'Carbon:sendAlt': typeof import('~icons/carbon/send-alt')['default']
+    'Carbon:translate': typeof import('~icons/carbon/translate')['default']
     Sider: typeof import('./components/Sider.vue')['default']
   }
 }

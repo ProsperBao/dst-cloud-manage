@@ -13,44 +13,52 @@
     </n-button>
     <n-back-top :right="40" />
     <n-list bordered>
-      <n-list-item v-for="mod in modStore.modList" :key="mod">
-        <n-spin :show="modStore.loading.includes(mod.id)">
+      <n-list-item v-for="item in mod.list" :key="item.id">
+        <n-spin :show="mod.loading.includes(item.id)">
           <n-thing>
             <template #avatar>
               <n-avatar
                 :size="100"
-                :src="mod.icon"
+                :src="item.icon"
               />
             </template>
             <template #header>
-              <n-ellipsis :line-clamp="1" @click="openSteamModDetail(mod.id)">
-                {{ mod.title }}
-              </n-ellipsis>
+              {{ item.title }}
             </template>
             <template #header-extra>
-              <n-tooltip placement="bottom" trigger="hover">
-                <template #trigger>
-                  <n-icon size="22" @click="openSteamModDetail(mod.id)">
-                    <ArrowRedoCircleOutline />
-                  </n-icon>
-                </template>
-                <span>{{ t('button.to-steam') }}</span>
-              </n-tooltip>
+              <n-button-group>
+                <n-tooltip placement="bottom" trigger="hover">
+                  <template #trigger>
+                    <n-button type="default" size="small" round @click="openSteamModDetail(item.id)">
+                      <carbon:send-alt />
+                    </n-button>
+                  </template>
+                  {{ t('button.to-steam') }}
+                </n-tooltip>
+                <n-tooltip placement="bottom" trigger="hover">
+                  <template #trigger>
+                    <n-button type="default" size="small" round @click="translate(item.id)">
+                      <carbon:translate />
+                    </n-button>
+                  </template>
+                  {{ t('button.translate-mod') }}
+                </n-tooltip>
+              </n-button-group>
             </template>
             <template #description>
               <n-text tag="div" depth="3">
-                {{ t("describe.size") }}: {{ mod.size }}
+                {{ t("describe.size") }}: {{ item.size }}
               </n-text>
-              <n-text v-if="!!mod.releaseDate" tag="div" depth="3">
-                {{ t("describe.release-date") }}: {{ mod.releaseDate }}
+              <n-text v-if="!!item.releaseDate" tag="div" depth="3">
+                {{ t("describe.release-date") }}: {{ item.releaseDate }}
               </n-text>
-              <n-text v-if="!!mod.lastUpdateDate" tag="div" depth="3">
-                {{ t("describe.last-update-date") }}: {{ mod.lastUpdateDate }}
+              <n-text v-if="!!item.lastUpdateDate" tag="div" depth="3">
+                {{ t("describe.last-update-date") }}: {{ item.lastUpdateDate }}
               </n-text>
             </template>
             <n-collapse>
               <n-collapse-item title="查看Steam简介" name="1">
-                <div class="steam-desc-container" v-html="mod.steamDescription" />
+                <div class="steam-desc-container" v-html="item.steamDescription" />
               </n-collapse-item>
             </n-collapse>
           </n-thing>
@@ -61,23 +69,24 @@
 </template>
 
 <script lang="ts" setup>
-import { ArrowRedoCircleOutline } from '@vicons/ionicons5'
-import { store } from '../../utils/electron-store'
 import { useModStore } from '../../store/mod'
+// import { store } from '../../utils/electron-store'
 
 const { t } = useI18n()
-const modStore = useModStore()
+const mod = useModStore()
 
-const forceRefresh = () => modStore.forceUpdateModInfo()
+const forceRefresh = () => mod.forceUpdate()
 
 const openSteamModDetail = (modSteamId: string) => window.open(`https://steamcommunity.com/sharedfiles/filedetails?id=${modSteamId}`)
 
-const loadModList = async() => {
-  await window.ssh.connect(await store.get('connect-data'))
-  const mods = await window.ssh.getServerSetupMods()
-  modStore.setServerModList(mods)
-}
-loadModList()
+const translate = (id: string) => mod.translate(id)
+
+// const init = async() => {
+//   await window.ssh.connect(await store.get('config-server'))
+//   const serverList = await window.ssh.getServerSetupMods()
+//   mod.initState(serverList)
+// }
+// init()
 </script>
 
 <style>
