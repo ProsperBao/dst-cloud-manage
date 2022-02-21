@@ -19,19 +19,20 @@ export interface Mod {
   [key: string]: string | undefined
 }
 
+export interface ModState{
+  _list: Record<string, Mod>
+  loading: string[]
+  serverList: string[]
+}
+
 export const useModStore = defineStore('mod', {
-  state: (): {
-    _list: Record<string, Mod>
-    loading: string[]
-    serverList: string[]
-  } => ({
+  state: (): ModState => ({
     _list: {},
     loading: [],
     serverList: [],
   }),
   getters: {
     list: (state): Mod[] => {
-      console.log(state._list)
       return state.serverList.map((id: string) => state._list[id] || { id })
     },
   },
@@ -46,7 +47,7 @@ export const useModStore = defineStore('mod', {
       let mod: Mod
       this.loading.push(id)
       try {
-        mod = JSON.parse(await localCache.getModInfoBySteamModId(id, steamLanguage))
+        mod = JSON.parse(await localCache.getSteamMod(id, steamLanguage))
       }
       catch (e) {
         mod = { id }
@@ -132,6 +133,10 @@ export const useModStore = defineStore('mod', {
       this.$patch({ _list: { [id]: mod } })
       store.set('mod-list', this._list)
       this.loading = this.loading.filter(i => i !== id)
+    },
+
+    async patchModConfig() {
+      console.log('1222')
     },
 
     async initState(serverList: string[]) {

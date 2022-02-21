@@ -9,13 +9,17 @@ export interface Translate {
   to?: string
 }
 
+export interface ConfigState{
+  server: Config
+  translate: Translate
+  lockFunc: boolean
+}
+
 export const useConfigStore = defineStore('config', {
-  state: (): {
-    server: Config
-    translate: Translate
-  } => ({
+  state: (): ConfigState => ({
     server: {},
     translate: {},
+    lockFunc: false,
   }),
   getters: {},
   actions: {

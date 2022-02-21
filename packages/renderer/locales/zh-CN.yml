@@ -18,7 +18,9 @@ breadcrumb:
 button:
   back: 返回
   force-refresh: 强制刷新
+  refresh: 刷新
   save: 保存
+  to-config-server: 去配置服务器信息
   to-steam: 点击查看模组详情
   translate: 翻译
   translate-mod: 翻译模组
@@ -35,6 +37,9 @@ menu:
 other:
   dateFormat: YYYY-MM-DD HH:mm:ss
   steamLanguage: schinese
+result:
+  mod-list-locked: 暂无信息
+  mod-list-locked-desc: 请先配置好服务器信息，并连接成功后再试
 save:
   connect-fail: 请先点击连接测试按钮，待成功之后即可保存
   success: 保存成功

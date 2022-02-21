@@ -1,17 +1,16 @@
 import { createPinia } from 'pinia'
 import type { UserModule } from '../types'
-import { useModStore } from '../store/mod'
-import { store } from '../utils/electron-store'
+import { useConfigStore } from '../store/config'
+import { ssh } from '../utils/ssh-operate'
 
 const initStore = async() => {
-  await window.ssh.connect(await store.get('config-server'))
-  const mod = useModStore()
-  const serverList = await window.ssh.getServerSetupMods()
-  await mod.initState(serverList)
+  const config = useConfigStore()
+  await config.initState()
+  ssh.connect()
 }
 
 export const install: UserModule = ({ app }) => {
   const pinia = createPinia()
-  initStore()
   app.use(pinia)
+  initStore()
 }

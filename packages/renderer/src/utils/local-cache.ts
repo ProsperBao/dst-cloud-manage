@@ -3,8 +3,8 @@ import { store } from './electron-store'
 const { invoke } = window.ipcRenderer
 
 export const localCache = {
-  async getModInfoBySteamModId(modSteamId: string, steamLanguage = 'schinese') {
-    return await invoke('local-cache', 'getModInfoBySteamModId', modSteamId, steamLanguage)
+  async getSteamMod(modSteamId: string, steamLanguage = 'schinese') {
+    return await invoke('local-cache', 'getSteamMod', modSteamId, steamLanguage)
   },
   async translate(text = 'hello world', isHtml = false) {
     const config = await store.get('config-translate')

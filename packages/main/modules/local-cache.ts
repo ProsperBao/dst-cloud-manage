@@ -8,11 +8,11 @@ import type { Mod } from '../../renderer/src/store/mod'
 const axios = require('axios')
 
 export interface LocalCache {
-  getModInfoBySteamModId: (modId: string) => Promise<string>
+  getSteamMod: (modId: string) => Promise<string>
 }
 
 export const localCache = {
-  async getModInfoBySteamModId(id: string, steamLanguage = 'schinese'): Promise<string> {
+  async getSteamMod(id: string, steamLanguage = 'schinese'): Promise<string> {
     const modInfoUrl = `https://steamcommunity.com/sharedfiles/filedetails?id=${id}`
     try {
       const { data } = await axios.get(modInfoUrl, {
@@ -22,10 +22,9 @@ export const localCache = {
         },
         timeout: 5000,
       })
-      return JSON.stringify(localCache.handleModInfoByHtml(data, id))
+      return JSON.stringify(localCache.handleModHtml(data, id))
     }
     catch (e) {
-      console.log(e.toJSON())
       return JSON.stringify({ id })
     }
   },
@@ -35,7 +34,7 @@ export const localCache = {
    * @param modId mod id
    * @returns handled mod info
    */
-  handleModInfoByHtml(htmlContent: string, modId: string): Mod {
+  handleModHtml(htmlContent: string, modId: string): Mod {
     const sizeAndDate = [...htmlContent.matchAll(/<div class="detailsStatRight">(.*?)<\/div>/g)].map(i => i[1])
     const alternativeIcon = htmlContent.match(/<img id="previewImage" class="workshopItemPreviewImageEnlargeable" src="(.*?)"/)?.[1] ?? ''
     return {
@@ -79,6 +78,9 @@ export const localCache = {
     }
 
     return transAfter
+  },
+  async copyToLocalCache() {
+
   },
 }
 ipcMain.handle(

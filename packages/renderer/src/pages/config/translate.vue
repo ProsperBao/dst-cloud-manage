@@ -10,7 +10,7 @@
       </n-breadcrumb>
       <n-alert :title="t('alert.info')" type="info">
         {{ t('alert.info-translate-content-part1') }}
-        <n-text underline type="info">
+        <n-text underline type="info" style="cursor: pointer;" @click="toBaiduApi">
           {{ t('alert.info-translate-content-part2') }}
         </n-text>
         {{ t('alert.info-translate-content-part3') }}
@@ -98,7 +98,8 @@ const rules = ref({
 const computedFrom = computed(() => translateBaiduOptions.filter(item => item.value !== model.value.to))
 const computedTo = computed(() => translateBaiduOptions.filter(item => item.value !== model.value.from))
 
-function validateDataSave(e: Event) {
+const toBaiduApi = () => window.open('https://fanyi-api.baidu.com/')
+const validateDataSave = (e: Event) => {
   e.preventDefault()
   formRef.value.validate((errors: any) => {
     if (!errors) {

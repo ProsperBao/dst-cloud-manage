@@ -28,7 +28,7 @@
             <n-input v-model:value="model.host" :placeholder="t('server.host-required')" />
           </n-form-item>
           <n-form-item :label="t('server.port')" path="port">
-            <n-input v-model:value="model.port" :placeholder="t('server.port-required')" />
+            <n-input-number v-model:value="model.port" :min="0" type="number" :placeholder="t('server.port-required')" />
           </n-form-item>
           <n-form-item :label="t('server.username')" path="username">
             <n-input v-model:value="model.username" :placeholder="t('server.username-required')" />
@@ -59,59 +59,52 @@
 import type { Config } from 'node-ssh'
 import { useMessage } from 'naive-ui'
 import { store } from '../../utils/electron-store'
+import { useConfigStore } from '../../store/config'
+import { ssh } from '../../utils/ssh-operate'
 
 const { t } = useI18n()
+const config = useConfigStore()
 const message = useMessage()
 
 const formRef = ref<any>(null)
-const model = ref({
+
+const model = ref<Config>({
   host: '',
-  port: '22',
+  port: 22,
   username: '',
   password: '',
 })
+if (config.server)
+  model.value = { ...model.value, ...config.server }
+
 const rules = ref({
-  host: [
-    { required: true, message: t('server.host-required') },
-  ],
-  port: [
-    { required: true, message: t('server.port-required') },
-  ],
-  username: [
-    { required: true, message: t('server.username-required') },
-  ],
-  password: [
-    { required: true, message: t('server.password-required') },
-  ],
+  host: [{ required: true, message: t('server.host-required') }],
+  port: [{ required: true, message: t('server.port-required') }],
+  username: [{ required: true, message: t('server.username-required') }],
+  password: [{ required: true, message: t('server.password-required') }],
 })
 
 const connectFlag = ref<number>(0)
-const connectMap = [
-  '',
-  'primary',
-  'error',
-]
+const connectMap = ['', 'primary', 'error']
 
-function validateDataSave(e: Event) {
-  if (connectFlag.value !== 1)
-    message.error(t('save.connect-fail'))
-
+const validateDataSave = (e: Event) => {
+  if (connectFlag.value !== 1) return message.error(t('save.connect-fail'))
   e.preventDefault()
   formRef.value.validate((errors: any) => {
     if (!errors) {
       const val = toRaw(model.value)
-      store.set('config-server', toRaw({ ...val, port: parseInt(val.port) }))
+      store.set('config-server', toRaw({ ...val }))
       message.success(t('save.success'))
     }
   })
 }
-function validateServerConnect(e: Event) {
+const validateServerConnect = (e: Event) => {
   e.preventDefault()
   formRef.value.validate(async(errors: any) => {
     if (!errors) {
       try {
         const val = toRaw(model.value)
-        await window.ssh.connect({ ...val, port: parseInt(val.port) })
+        await window.ssh.connect({ ...val })
         connectFlag.value = 1
         message.success(t('alert.connect-success'))
       }
@@ -122,11 +115,6 @@ function validateServerConnect(e: Event) {
     }
   })
 }
-
-(async() => {
-  const val = await store.get('config-server')
-  model.value = { ...val, port: val.port?.toString() }
-})()
 
 </script>
 
