@@ -1,12 +1,7 @@
 import fs from 'fs'
 import type { ContextBridge } from 'electron'
 
-import ssh from './ssh'
-
-export type { SSHOperateType } from './ssh'
-
 const setup: Record<string, any> = {
-  ssh,
   fs,
 }
 

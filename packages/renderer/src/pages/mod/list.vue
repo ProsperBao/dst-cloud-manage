@@ -7,7 +7,7 @@
       <n-breadcrumb-item>{{ t("breadcrumb.mod") }}</n-breadcrumb-item>
       <n-breadcrumb-item>{{ t("breadcrumb.list") }}</n-breadcrumb-item>
     </n-breadcrumb>
-    <template v-if="!config.lockFunc">
+    <LockFunc>
       <n-h1>
         {{ t("title.mod-list") }}
         <n-button quaternary type="info" @click="forceRefresh">
@@ -68,32 +68,14 @@
           </n-spin>
         </n-list-item>
       </n-list>
-    </template>
-    <n-result
-      v-else
-      status="info"
-      style="padding: 100px"
-      :title="t('result.mod-list-locked')"
-      :description="t('result.mod-list-locked-desc')"
-    >
-      <template #footer>
-        <n-space>
-          <n-button @click="refreshMod">
-            {{ t('button.refresh') }}
-          </n-button>
-          <n-button @click="$router.push({path:'/config/server'})">
-            {{ t('button.to-config-server') }}
-          </n-button>
-        </n-space>
-      </template>
-    </n-result>
+    </LockFunc>
   </div>
 </template>
 
 <script lang="ts" setup>
 import { useConfigStore } from '../../store/config'
 import { useModStore } from '../../store/mod'
-import { ssh } from '../../utils/ssh-operate'
+import { sshOperate } from '../../utils/ssh-operate'
 
 const { t } = useI18n()
 const mod = useModStore()
@@ -102,9 +84,11 @@ const config = useConfigStore()
 const forceRefresh = () => mod.forceUpdate()
 const translate = (id: string) => mod.translate(id)
 const openSteamModDetail = (modSteamId: string) => window.open(`https://steamcommunity.com/sharedfiles/filedetails?id=${modSteamId}`)
-const refreshMod = async() => await ssh.connect()
 
-mod.patchModConfig()
+;(async() => {
+  mod.initState(await sshOperate.getServerSetupMods('steamcmd/~/myDSTserver'))
+  mod.patchModConfig()
+})()
 </script>
 
 <style>

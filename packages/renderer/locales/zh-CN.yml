@@ -14,6 +14,7 @@ breadcrumb:
   list: 列表
   mod: 模组
   server: 服务器
+  server-extra: 饥荒服务器
   translate: 翻译
 button:
   back: 返回
@@ -33,6 +34,7 @@ menu:
   home: 首页
   mod: 模组
   server: 服务器
+  server-extra: 饥荒服务器
   translate: 翻译
 other:
   dateFormat: YYYY-MM-DD HH:mm:ss
@@ -51,6 +53,8 @@ server:
   port: 端口
   port-pattern: 请输入正确的端口
   port-required: 请输入端口
+  setup: 服务器安装位置
+  setup-required: 请输入服务器安装位置
   username: 用户名
   username-required: 请输入用户名
 title:

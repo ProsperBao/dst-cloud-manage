@@ -2,7 +2,10 @@ import { defineStore } from 'pinia'
 import { i18n } from '../modules/i18n'
 import { store } from '../utils/electron-store'
 import { localCache } from '../utils/local-cache'
+import { Lua2json } from '../utils/lua-2-json'
+import { sshOperate } from '../utils/ssh-operate'
 import { sleep } from '../utils/time'
+import { useConfigStore } from './config'
 
 const MAX_DETECTION_NUM = 3
 
@@ -91,7 +94,6 @@ export const useModStore = defineStore('mod', {
 
       for (const queueItem of queue) {
         const res = await Promise.all(queueItem.map(id => this.detectMod(id, false)))
-        console.log(res)
         res.forEach((mod) => {
           tempCache[mod.id] = mod
         })
@@ -136,19 +138,23 @@ export const useModStore = defineStore('mod', {
     },
 
     async patchModConfig() {
-      console.log('1222')
+      const config = useConfigStore()
+      const files = await sshOperate.serverSetupMod2Cache(config.serverExtra.setup || '', config.serverExtra.cluster || 1)
+      console.log(files)
+      console.log(await store.get('ast'))
+      const lua2json = new Lua2json({ locale: 'zh' })
+      lua2json.handleAst(await store.get('ast'))
+      console.log(lua2json.variables)
     },
 
     async initState(serverList: string[]) {
       this.serverList = serverList
       const val = await store.get('mod-list')
-      if (!Object.keys(val).length) {
+      if (!Object.keys(val).length)
         this._list = {}
-        this.detectModList()
-      }
-      else {
+      else
         this._list = val
-      }
+      this.detectModList()
     },
   },
 })

@@ -15,7 +15,7 @@ const router = createRouter({
 app.use(router)
 
 // register modules
-Object.values(import.meta.globEager('./modules/*.ts')).map(i => i.install?.({ app, router }))
+Promise.all(Object.values(import.meta.globEager('./modules/*.ts')).map(i => i.install?.({ app, router })))
 
 app.mount('#app')
   .$nextTick(window.removeLoading)

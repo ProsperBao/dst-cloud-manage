@@ -7,11 +7,13 @@
 </template>
 
 <script lang="ts" setup>
+import { useModStore } from '../store/mod'
+
 const { t } = useI18n()
 
-const connect = async() => {
-  // await window.ssh.connect(await store.get('connect-data'))
-  // const mods = await window.ssh.getServerSetupMods()
-}
+const mod = useModStore()
 
+const connect = () => {
+  mod.patchModConfig()
+}
 </script>

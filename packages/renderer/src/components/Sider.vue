@@ -79,6 +79,20 @@ const menuOptions = [
             RouterLink,
             {
               to: {
+                path: '/config/server-extra',
+              },
+            },
+            { default: () => t('menu.server-extra') },
+          ),
+        key: 'go-config-server-extra',
+        icon: renderIcon(IconBareMetalServer),
+      },
+      {
+        label: () =>
+          h(
+            RouterLink,
+            {
+              to: {
                 path: '/config/translate',
               },
             },

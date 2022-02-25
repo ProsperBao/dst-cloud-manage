@@ -68,10 +68,12 @@
 import { useMessage } from 'naive-ui'
 import { translateBaiduOptions } from '../../config/translate'
 import type { Translate } from '../../store/config'
+import { useConfigStore } from '../../store/config'
 import { store } from '../../utils/electron-store'
 
 const { t } = useI18n()
 const message = useMessage()
+const config = useConfigStore()
 
 const formRef = ref<any>(null)
 const model = ref<Translate>({
@@ -103,7 +105,7 @@ const validateDataSave = (e: Event) => {
   e.preventDefault()
   formRef.value.validate((errors: any) => {
     if (!errors) {
-      store.set('config-translate', toRaw(model.value))
+      config.updateTranslate(toRaw(model.value))
       message.success(t('save.success'))
     }
   })

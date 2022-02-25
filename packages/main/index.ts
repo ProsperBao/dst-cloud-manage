@@ -3,6 +3,7 @@ import { join } from 'path'
 import { BrowserWindow, app, shell } from 'electron'
 import './modules/electron-store'
 import './modules/local-cache'
+import './modules/ssh-operate'
 
 // Disable GPU Acceleration for Windows 7
 if (release().startsWith('6.1')) app.disableHardwareAcceleration()
