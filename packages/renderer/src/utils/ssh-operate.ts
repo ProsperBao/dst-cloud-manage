@@ -16,5 +16,6 @@ export const sshOperate = {
   testConnect: async(config: Config) => await invoke('testConnect', config),
   getServerSetupMods: async(ServerSetupPath: string) => await invoke('getServerSetupMods', ServerSetupPath),
   getServerSetupModCollection: async(ServerSetupPath: string) => await invoke('getServerSetupModCollection', ServerSetupPath),
-  serverSetupMod2Cache: async(ServerSetupPath: string, cluster = 1) => await invoke('serverSetupMod2Cache', ServerSetupPath, cluster),
+  serverGetModConfig: async(ServerSetupPath: string, cluster = 1, id: string) => await invoke('serverGetModConfig', ServerSetupPath, cluster, id),
+  serverGetApplyConfig: async(cluster = 1) => await invoke('serverGetApplyConfig', cluster),
 }

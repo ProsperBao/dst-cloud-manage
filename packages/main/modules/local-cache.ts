@@ -2,7 +2,7 @@ import { ipcMain } from 'electron'
 
 import { MD5 } from 'crypto-js'
 
-import type { Translate } from 'packages/renderer/src/store/config'
+import type { Translate } from '../../renderer/src/store/config'
 import type { Mod } from '../../renderer/src/store/mod'
 
 const axios = require('axios')

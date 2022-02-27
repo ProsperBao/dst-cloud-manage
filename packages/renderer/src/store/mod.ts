@@ -2,7 +2,6 @@ import { defineStore } from 'pinia'
 import { i18n } from '../modules/i18n'
 import { store } from '../utils/electron-store'
 import { localCache } from '../utils/local-cache'
-import { Lua2json } from '../utils/lua-2-json'
 import { sshOperate } from '../utils/ssh-operate'
 import { sleep } from '../utils/time'
 import { useConfigStore } from './config'
@@ -11,7 +10,6 @@ const MAX_DETECTION_NUM = 3
 
 export interface Mod {
   title?: string
-  description?: string
   steamDescription?: string
   id: string
   icon?: string
@@ -19,17 +17,35 @@ export interface Mod {
   lastUpdateDate?: string
   releaseDate?: string
   lastDetectionTime?: string
-  [key: string]: string | undefined
+  originConfig?: ModConfig[]
+  applyConfig?: ModApplyConfig
+  [key: string]: string | undefined | ModConfig[] | ModApplyConfig
 }
 
-export interface ModState{
-  _list: Record<string, Mod>
-  loading: string[]
-  serverList: string[]
+export interface ModApplyConfig {
+  enabled: boolean
+  configuration_options: Record<string, boolean | number>
+}
+
+export interface ModConfig {
+  default: boolean
+  hover: string
+  label: string
+  name: string
+  options: ModConfigOption[]
+}
+export interface ModConfigOption {
+  data: boolean | number
+  description: string
+  hover: string
 }
 
 export const useModStore = defineStore('mod', {
-  state: (): ModState => ({
+  state: (): {
+    _list: Record<string, Mod>
+    loading: string[]
+    serverList: string[]
+  } => ({
     _list: {},
     loading: [],
     serverList: [],
@@ -136,15 +152,26 @@ export const useModStore = defineStore('mod', {
       store.set('mod-list', this._list)
       this.loading = this.loading.filter(i => i !== id)
     },
-
-    async patchModConfig() {
+    /**
+     * get mod config by server modinfo.lua file
+     * @param id mod id
+     */
+    async patchModConfig(id: string) {
+      if (!this._list[id]) return
       const config = useConfigStore()
-      const files = await sshOperate.serverSetupMod2Cache(config.serverExtra.setup || '', config.serverExtra.cluster || 1)
-      console.log(files)
-      console.log(await store.get('ast'))
-      const lua2json = new Lua2json({ locale: 'zh' })
-      lua2json.handleAst(await store.get('ast'))
-      console.log(lua2json.variables)
+      try {
+        const modConfig = await sshOperate.serverGetModConfig(config.serverExtra.setup || '', config.serverExtra.cluster || 1, id)
+        this._list[id].originConfig = JSON.parse(modConfig)
+      }
+      catch {
+        this._list[id].originConfig = []
+      }
+    },
+
+    async patchApplyConfig() {
+      const config = useConfigStore()
+      const res = await sshOperate.serverGetApplyConfig(config.serverExtra.cluster || 1)
+      console.log(JSON.parse(res))
     },
 
     async initState(serverList: string[]) {
