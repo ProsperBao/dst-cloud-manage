@@ -1,25 +1,18 @@
 <template>
-  <div>
-    <n-button @click="connect">
-      {{ t('button.save') }}
-    </n-button>
-    <n-button @click="reload">
-      刷新
-    </n-button>
-  </div>
+  <n-grid :x-gap="24" :y-gap="24" :cols="2">
+    <n-grid-item>
+      <QuicklyInstall class="index-btn-container" />
+    </n-grid-item>
+  </n-grid>
 </template>
 
 <script lang="ts" setup>
-import { useModStore } from '../store/mod'
-
-const { t } = useI18n()
-
-const mod = useModStore()
-
-const connect = () => {
-  mod.patchModConfig('362175979')
-}
-
-const reload = () => location.reload()
 
 </script>
+
+<style scoped>
+.index-btn-container {
+  width: 100%;
+  height: calc(50vh - 24px - 12px);
+}
+</style>

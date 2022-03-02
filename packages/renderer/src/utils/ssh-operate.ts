@@ -18,4 +18,10 @@ export const sshOperate = {
   getServerSetupModCollection: async(ServerSetupPath: string) => await invoke('getServerSetupModCollection', ServerSetupPath),
   serverGetModConfig: async(ServerSetupPath: string, cluster = 1, id: string) => await invoke('serverGetModConfig', ServerSetupPath, cluster, id),
   serverGetApplyConfig: async(cluster = 1) => await invoke('serverGetApplyConfig', cluster),
+  updateSystemOrigin: async() => await invoke('updateSystemOrigin'),
+  installDepend: async() => await invoke('installDepend'),
+  downloadSteamCMD: async() => await invoke('downloadSteamCMD'),
+  installSteamCMD: async() => await invoke('installSteamCMD'),
+  installServerClient: async() => await invoke('installServerClient'),
+
 }

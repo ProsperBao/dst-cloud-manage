@@ -7,6 +7,8 @@ const fengari = require('fengari-web')
 class SSHOperate {
   connection: NodeSSHType | null = null
 
+  execLog: string | null = null
+
   constructor() {
     this.connection = new NodeSSH() as NodeSSHType
   }
@@ -205,6 +207,66 @@ class SSHOperate {
     end
     local json = j()
     `
+  }
+
+  async updateSystemOrigin() {
+    const connection = this.getConnection()
+    const res = await connection.execCommand('apt-get update')
+    this.execLog += res.stdout || res.stderr
+    return this.execLog
+  }
+
+  async installDepend() {
+    const connection = this.getConnection()
+    const res = await connection.execCommand('apt-get install screen libstdc++6 libgcc1 libcurl4-gnutls-dev libstdc++6:i386 libgcc1:i386 libcurl4-gnutls-dev:i386 -y')
+    this.execLog = res.stdout.split('\n').reverse().join('\n') + this.execLog
+    return this.execLog
+  }
+
+  async downloadSteamCMD() {
+    const connection = this.getConnection()
+    let res = await connection.execCommand('mkdir ~/steamcmd')
+    this.execLog = res.stdout.split('\n').reverse().join('\n') + this.execLog
+    res = await connection.execCommand('wget -P ~/steamcmd https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz')
+    this.execLog = res.stdout.split('\n').reverse().join('\n') + this.execLog
+    return this.execLog
+  }
+
+  async installSteamCMD() {
+    const connection = this.getConnection()
+    const res = await connection.execCommand('tar -xvzf ~/steamcmd/steamcmd_linux.tar.gz -C ~/steamcm')
+    this.execLog = res.stdout.split('\n').reverse().join('\n') + this.execLog
+    return this.execLog
+  }
+
+  async installServerClient() {
+    const connection = this.getConnection()
+
+    try {
+      await connection.exec('bash ~/steamcmd/steamcmd.sh +force_install_dir ~/myDSTserver +login anonymous +app_update 343050 validate +quit', [], {
+        onStdout: (chunk) => {
+          this.execLog = chunk.toString('utf8').split('\n').reverse().join('\n') + this.execLog
+          console.log(chunk.toString('utf8'))
+        },
+        onStderr: (chunk) => {
+          this.execLog = chunk.toString('utf8').split('\n').reverse().join('\n') + this.execLog
+          console.log(chunk.toString('utf8'))
+        },
+      })
+    }
+    catch {
+      if (this.execLog && this.execLog.includes('fully installed'))
+        return true
+    }
+    return false
+  }
+
+  currentServerInstallProgress() {
+
+  }
+
+  currentServerInstallLog() {
+    return this.execLog
   }
 }
 

@@ -4,10 +4,10 @@
 
 declare module 'vue' {
   export interface GlobalComponents {
-    'Carbon:sendAlt': typeof import('~icons/carbon/send-alt')['default']
-    'Carbon:translate': typeof import('~icons/carbon/translate')['default']
+    'Carbon:dataShare': typeof import('~icons/carbon/data-share')['default']
     LockFunc: typeof import('./components/LockFunc.vue')['default']
     ModItem: typeof import('./components/ModItem.vue')['default']
+    QuicklyInstall: typeof import('./components/function/QuicklyInstall.vue')['default']
     Sider: typeof import('./components/Sider.vue')['default']
   }
 }

@@ -19,6 +19,7 @@ breadcrumb:
 button:
   back: 返回
   force-refresh: 强制刷新
+  quickly-install: 一键部署
   refresh: 刷新
   save: 保存
   to-config-server: 去配置服务器信息
@@ -29,6 +30,16 @@ describe:
   last-update-date: 最后更新时间
   release-date: 发布时间
   size: 大小
+install:
+  download-server-client: 正在安装饥荒联机版服务器套件
+  download-steam-cmd: 正在下载 SteamCMD
+  fail: 部署失败
+  install-depend: 正在安装系统依赖
+  install-steam-cmd: 正在安装 SteamCMD
+  pending: 部署中
+  quickly-install: 一键部署中
+  success: 部署成功
+  update-system-origin: 正在更新系统安装工具镜像源
 menu:
   config: 配置
   home: 首页
