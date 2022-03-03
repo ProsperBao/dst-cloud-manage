@@ -1,5 +1,6 @@
 import type { Config, NodeSSH as NodeSSHType } from 'node-ssh'
 import { ipcMain } from 'electron'
+import { last } from 'lodash'
 
 const { NodeSSH } = require('node-ssh')
 const fengari = require('fengari-web')
@@ -7,7 +8,9 @@ const fengari = require('fengari-web')
 class SSHOperate {
   connection: NodeSSHType | null = null
 
-  execLog: string | null = null
+  execLog = ''
+
+  quicklyStatus: 'pending' | 'success' | 'fail' |'disabled' = 'disabled'
 
   constructor() {
     this.connection = new NodeSSH() as NodeSSHType
@@ -24,12 +27,12 @@ class SSHOperate {
     await connection.connect(config)
   }
 
-  static async testConnect(config: Config) {
+  static async testConnect(config: Config): Promise<void> {
     const tempConnection = new NodeSSH() as NodeSSHType
     await tempConnection.connect(config)
   }
 
-  async getServerSetupMods(ServerSetupPath: string) {
+  async getServerSetupMods(ServerSetupPath: string): Promise<string[]> {
     const connection = this.getConnection()
     const path = `${ServerSetupPath}/mods/dedicated_server_mods_setup.lua`
     const mods = await connection.execCommand(`cat ${path}`)
@@ -39,7 +42,7 @@ class SSHOperate {
       return []
   }
 
-  async getServerSetupModCollection(ServerSetupPath: string) {
+  async getServerSetupModCollection(ServerSetupPath: string): Promise<string[]> {
     const connection = this.getConnection()
     const path = `${ServerSetupPath}/mods/dedicated_server_mods_setup.lua`
     const mods = await connection.execCommand(`cat ${path}`)
@@ -49,7 +52,7 @@ class SSHOperate {
       return []
   }
 
-  async serverGetModConfig(ServerSetupPath: string, cluster = 1, id: string) {
+  async serverGetModConfig(ServerSetupPath: string, cluster = 1, id: string): Promise<string> {
     const connection = this.getConnection()
     const path = `${ServerSetupPath}/ugc_mods/Cluster_${cluster}/Master/content/322330/${id}/modinfo.lua`
     const result = await connection.execCommand(`cat ${path}`)
@@ -59,7 +62,7 @@ class SSHOperate {
       return '[]'
   }
 
-  async serverGetApplyConfig(cluster = 1) {
+  async serverGetApplyConfig(cluster = 1): Promise<string> {
     const connection = this.getConnection()
     const result = await connection.execCommand(`cat ~/.klei/DoNotStarveTogether/Cluster_${cluster}/modoverrides.lua`)
     if (result.stdout)
@@ -68,7 +71,7 @@ class SSHOperate {
     else return '{}'
   }
 
-  runLuaAndReadData(luaScript: string) {
+  runLuaAndReadData(luaScript: string): string {
     return fengari.load(`
       ${this.getLuaJsonScript()}
       local locale = "en"
@@ -77,7 +80,7 @@ class SSHOperate {
     `)()
   }
 
-  getLuaJsonScript() {
+  getLuaJsonScript(): string {
     return `
     function j()
       local json = {}
@@ -209,64 +212,110 @@ class SSHOperate {
     `
   }
 
-  async updateSystemOrigin() {
+  async updateSystemOrigin(): Promise<string> {
     const connection = this.getConnection()
     const res = await connection.execCommand('apt-get update')
-    this.execLog += res.stdout || res.stderr
+    this.execLog = res.stdout || res.stderr
     return this.execLog
   }
 
-  async installDepend() {
+  async installDepend(): Promise<string> {
     const connection = this.getConnection()
     const res = await connection.execCommand('apt-get install screen libstdc++6 libgcc1 libcurl4-gnutls-dev libstdc++6:i386 libgcc1:i386 libcurl4-gnutls-dev:i386 -y')
-    this.execLog = res.stdout.split('\n').reverse().join('\n') + this.execLog
+    this.execLog += res.stdout
     return this.execLog
   }
 
-  async downloadSteamCMD() {
+  async downloadSteamCMD(): Promise<string> {
     const connection = this.getConnection()
     let res = await connection.execCommand('mkdir ~/steamcmd')
-    this.execLog = res.stdout.split('\n').reverse().join('\n') + this.execLog
+    this.execLog += res.stdout
     res = await connection.execCommand('wget -P ~/steamcmd https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz')
-    this.execLog = res.stdout.split('\n').reverse().join('\n') + this.execLog
+    this.execLog += res.stdout
     return this.execLog
   }
 
-  async installSteamCMD() {
+  async installSteamCMD(): Promise<string> {
     const connection = this.getConnection()
-    const res = await connection.execCommand('tar -xvzf ~/steamcmd/steamcmd_linux.tar.gz -C ~/steamcm')
-    this.execLog = res.stdout.split('\n').reverse().join('\n') + this.execLog
+    const res = await connection.execCommand('tar -xvzf ~/steamcmd/steamcmd_linux.tar.gz -C ~/steamcmd')
+    this.execLog += res.stdout
     return this.execLog
   }
 
-  async installServerClient() {
+  async installServerClient(): Promise<boolean> {
     const connection = this.getConnection()
-
+    this.quicklyStatus = 'pending'
     try {
       await connection.exec('bash ~/steamcmd/steamcmd.sh +force_install_dir ~/myDSTserver +login anonymous +app_update 343050 validate +quit', [], {
         onStdout: (chunk) => {
-          this.execLog = chunk.toString('utf8').split('\n').reverse().join('\n') + this.execLog
-          console.log(chunk.toString('utf8'))
+          this.execLog += chunk.toString('utf8')
         },
         onStderr: (chunk) => {
-          this.execLog = chunk.toString('utf8').split('\n').reverse().join('\n') + this.execLog
-          console.log(chunk.toString('utf8'))
+          this.execLog += chunk.toString('utf8')
         },
       })
     }
     catch {
-      if (this.execLog && this.execLog.includes('fully installed'))
+      if (this.execLog && this.execLog.includes('fully installed')) {
+        this.quicklyStatus = 'success'
         return true
+      }
+      else {
+        this.quicklyStatus = 'fail'
+      }
     }
     return false
   }
 
-  currentServerInstallProgress() {
-
+  async currentServerInstallProgress(): Promise<number> {
+    const log = this.execLog?.split('\n')
+    let end = last(log) || ''
+    if (!end.includes('progress')) {
+      for (let i = log.length - 1; i >= log.length - 3; i--) {
+        if (log[i].includes('progress')) {
+          end = log[i]
+          break
+        }
+      }
+    }
+    if (end.includes('fully installed') || ['success', 'fail'].includes(this.quicklyStatus)) {
+      const connection = this.getConnection()
+      await connection.execCommand('pkill -９ steam')
+      return 100
+    }
+    else if (end.includes('progress') && this.quicklyStatus === 'pending') {
+      const progress = end.match(/:(.*?)\(/)
+      return parseInt(`${progress?.[1] || ''}`.trim())
+    }
+    else if (this.quicklyStatus === 'pending') {
+      return 0
+    }
+    else {
+      return -1
+    }
   }
 
   currentServerInstallLog() {
     return this.execLog
+  }
+
+  async initServerClient(): Promise<boolean> {
+    const connection = this.getConnection()
+    return new Promise((resolve) => {
+      connection.exec('~/myDSTserver/bin/dontstarve_dedicated_server_nullrenderer', [], {
+        onStdout: (chunk) => {
+          console.log(chunk.toString('utf8'))
+          if (chunk.toString('utf8').includes('Your Server Will Not Start')) {
+            connection.execCommand('pkill -９ dontstarve')
+            resolve(true)
+          }
+        },
+        onStderr: (chunk) => {
+          console.log(chunk.toString('utf8'))
+          resolve(false)
+        },
+      })
+    })
   }
 }
 

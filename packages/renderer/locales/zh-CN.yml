@@ -19,6 +19,7 @@ breadcrumb:
 button:
   back: 返回
   force-refresh: 强制刷新
+  mod-config: mod配置
   quickly-install: 一键部署
   refresh: 刷新
   save: 保存
@@ -26,6 +27,7 @@ button:
   to-steam: 点击查看模组详情
   translate: 翻译
   translate-mod: 翻译模组
+  view-steam: 查看Steam简介
 describe:
   last-update-date: 最后更新时间
   release-date: 发布时间

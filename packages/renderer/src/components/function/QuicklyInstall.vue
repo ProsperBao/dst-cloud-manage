@@ -17,7 +17,17 @@
             <n-spin stroke="#2080f0" :show="true" :size="66" />
           </template>
           <template #footer>
-            <n-progress v-if="percentage != -1" class="progress" type="line" :status="status" :percentage="percentage" :show-indicator="false" />
+            <n-progress v-if="percentage != -1" class="progress" type="line" :status="status" :percentage="percentage" :indicator-placement="'inside'" :processing="status === Status.Pending" />
+            <n-collapse style="margin-top: 14px;">
+              <n-collapse-item title="执行日志" name="1">
+                <n-input
+                  :value="progressLog.split('\n').reverse().join('\n')"
+                  type="textarea"
+                  :readonly="true"
+                  placeholder="执行日志"
+                />
+              </n-collapse-item>
+            </n-collapse>
           </template>
         </n-result>
       </n-drawer-content>
@@ -28,6 +38,7 @@
 <script lang="ts" setup>
 import { useConfigStore } from '../../store/config'
 import { sshOperate } from '../../utils/ssh-operate'
+import { sleep } from '../../utils/time'
 
 const { t } = useI18n()
 
@@ -42,36 +53,63 @@ const percentage = ref<number>(-1)
 const status = ref<Status>(Status.Pending)
 const inProgress = ref<boolean>(false)
 const progressText = ref<string>('')
+const progressLog = ref<string>('')
 
 const installProgress = (progress: number) => {
   percentage.value = progress
 }
 
+const doProgress = async(desc: string, operate: () => Promise<any>, doneProgress?: number) => {
+  progressText.value = desc
+  await operate()
+  progressLog.value = await sshOperate.currentServerInstallLog()
+  doneProgress && installProgress(doneProgress)
+}
+
 const startInstall = async() => {
+  // console.log(await sshOperate.initServerClient())
+  const MAX_RETRY = 60 * 60 * 2
   config.lockFunc = true
   inProgress.value = true
   status.value = Status.Pending
   percentage.value = 1
   try {
-    progressText.value = t('install.update-system-origin')
-    await sshOperate.updateSystemOrigin()
-    installProgress(10)
-    progressText.value = t('install.install-depend')
-    await sshOperate.installDepend()
-    installProgress(20)
-    progressText.value = t('install.download-steam-cmd')
-    await sshOperate.downloadSteamCMD()
-    installProgress(30)
-    progressText.value = t('install.install-steam-cmd')
-    await sshOperate.installSteamCMD()
-    installProgress(40)
+    // await doProgress(t('install.update-system-origin'), sshOperate.updateSystemOrigin, 10)
+    // await sleep(1000)
+    // await doProgress(t('install.install-depend'), sshOperate.installDepend, 20)
+    // await sleep(1000)
+    // await doProgress(t('install.download-steam-cmd'), sshOperate.downloadSteamCMD, 30)
+    // await sleep(1000)
+    await doProgress(t('install.install-steam-cmd'), sshOperate.installSteamCMD, 40)
+    await sleep(1000)
     progressText.value = t('install.download-server-client')
-    const res = await sshOperate.installServerClient()
-    installProgress(80)
-    if (res)
+    sshOperate.installServerClient()
+
+    let count = 0
+    let progress = 0
+    do {
+      if (count > MAX_RETRY) {
+        status.value = Status.Fail
+        break
+      }
+      count += 1
+      progress = await sshOperate.currentServerInstallProgress()
+      if (progress === 100) {
+        break
+      }
+      else if (progress === -1) {
+        status.value = Status.Fail
+        break
+      }
+      installProgress(40 + progress * 0.4)
+      progressLog.value = await sshOperate.currentServerInstallLog()
+      await sleep(1000)
+    } while (progress !== -1)
+    if (status.value === Status.Pending) {
+      installProgress(80)
       status.value = Status.Success
-    else
-      status.value = Status.Fail
+      progressLog.value = await sshOperate.currentServerInstallLog()
+    }
   }
   catch {
     status.value = Status.Fail

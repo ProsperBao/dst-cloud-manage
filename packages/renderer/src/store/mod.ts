@@ -67,6 +67,7 @@ export const useModStore = defineStore('mod', {
       this.loading.push(id)
       try {
         mod = JSON.parse(await localCache.getSteamMod(id, steamLanguage))
+        this.patchModConfig(id)
       }
       catch (e) {
         mod = { id }
@@ -161,7 +162,15 @@ export const useModStore = defineStore('mod', {
       const config = useConfigStore()
       try {
         const modConfig = await sshOperate.serverGetModConfig(config.serverExtra.setup || '', config.serverExtra.cluster || 1, id)
-        this._list[id].originConfig = JSON.parse(modConfig)
+        this._list[id].originConfig = (JSON.parse(modConfig) || []).map((item: any) => {
+          return {
+            ...item,
+            default: `${item.default}`,
+            options: item.options.map((i: { description: any; data: any }) => ({ label: i.description, value: `${i.data}` })),
+          }
+        })
+        console.log(this._list[id].originConfig)
+        await store.set('mod-list', this._list)
       }
       catch {
         this._list[id].originConfig = []
@@ -177,6 +186,7 @@ export const useModStore = defineStore('mod', {
     async initState(serverList: string[]) {
       this.serverList = serverList
       const val = await store.get('mod-list')
+      console.log(val)
       if (!Object.keys(val).length)
         this._list = {}
       else

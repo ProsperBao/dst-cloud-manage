@@ -41,8 +41,15 @@
       </n-text>
     </template>
     <n-collapse>
-      <n-collapse-item title="查看Steam简介" name="1">
+      <n-collapse-item :title="t('button.view-steam')" name="1">
         <div class="steam-desc-container" v-html="mod.steamDescription" />
+      </n-collapse-item>
+      <n-collapse-item v-if="config.length> 1" :title="t('button.mod-config')" name="2">
+        <n-form>
+          <template v-for="formItem in config" :key="formItem.name">
+            <mod-config-item :config-item="formItem" />
+          </template>
+        </n-form>
       </n-collapse-item>
     </n-collapse>
   </n-thing>
@@ -52,10 +59,12 @@
 import type { Mod } from '../store/mod'
 import { useModStore } from '../store/mod'
 
-defineProps<{ mod: Mod }>()
+const props = defineProps<{ mod: Mod }>()
 
 const { t } = useI18n()
 const modStore = useModStore()
+
+const config = computed(() => props?.mod?.originConfig || [])
 
 const translate = (id: string) => modStore.translate(id)
 const openSteamModDetail = (modSteamId: string) => window.open(`https://steamcommunity.com/sharedfiles/filedetails?id=${modSteamId}`)
