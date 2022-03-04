@@ -5,6 +5,8 @@
 declare module 'vue' {
   export interface GlobalComponents {
     'Carbon:dataShare': typeof import('~icons/carbon/data-share')['default']
+    'Carbon:reset': typeof import('~icons/carbon/reset')['default']
+    'Carbon:rotate360': typeof import('~icons/carbon/rotate360')['default']
     'Carbon:sendAlt': typeof import('~icons/carbon/send-alt')['default']
     'Carbon:translate': typeof import('~icons/carbon/translate')['default']
     LockFunc: typeof import('./components/LockFunc.vue')['default']

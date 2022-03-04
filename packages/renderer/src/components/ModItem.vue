@@ -21,6 +21,14 @@
         </n-tooltip>
         <n-tooltip placement="bottom" trigger="hover">
           <template #trigger>
+            <n-button type="default" size="small" round @click="forceRefresh(mod.id)">
+              <carbon:rotate-360 />
+            </n-button>
+          </template>
+          {{ t('button.reset-mod-info') }}
+        </n-tooltip>
+        <n-tooltip placement="bottom" trigger="hover">
+          <template #trigger>
             <n-button type="default" size="small" round @click="translate(mod.id)">
               <carbon:translate />
             </n-button>
@@ -45,6 +53,26 @@
         <div class="steam-desc-container" v-html="mod.steamDescription" />
       </n-collapse-item>
       <n-collapse-item v-if="config.length> 1" :title="t('button.mod-config')" name="2">
+        <template #header-extra>
+          <n-button-group>
+            <n-tooltip placement="bottom" trigger="hover">
+              <template #trigger>
+                <n-button type="default" size="small" round>
+                  <carbon:reset />
+                </n-button>
+              </template>
+              {{ t('button.reset-mod-config') }}
+            </n-tooltip>
+            <n-tooltip placement="bottom" trigger="hover">
+              <template #trigger>
+                <n-button type="default" size="small" round @click.stop="translateConfig(mod.id)">
+                  <carbon:translate />
+                </n-button>
+              </template>
+              {{ t('button.translate-mod-config') }}
+            </n-tooltip>
+          </n-button-group>
+        </template>
         <n-form>
           <template v-for="formItem in config" :key="formItem.name">
             <mod-config-item :config-item="formItem" />
@@ -67,5 +95,7 @@ const modStore = useModStore()
 const config = computed(() => props?.mod?.originConfig || [])
 
 const translate = (id: string) => modStore.translate(id)
+const translateConfig = (id: string) => modStore.translateConfig(id)
+const forceRefresh = (id: string) => modStore.forceUpdate(id)
 const openSteamModDetail = (modSteamId: string) => window.open(`https://steamcommunity.com/sharedfiles/filedetails?id=${modSteamId}`)
 </script>

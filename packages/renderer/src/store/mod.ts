@@ -35,9 +35,11 @@ export interface ModConfig {
   options: ModConfigOption[]
 }
 export interface ModConfigOption {
-  data: boolean | number
-  description: string
-  hover: string
+  data?: boolean | number
+  description?: string
+  hover?: string
+  value: boolean | number
+  label: string
 }
 
 export const useModStore = defineStore('mod', {
@@ -63,15 +65,11 @@ export const useModStore = defineStore('mod', {
      */
     async updateMod(id: string): Promise<Mod> {
       const steamLanguage = (i18n.global as any).t('other.steamLanguage')
-      let mod: Mod
       this.loading.push(id)
-      try {
-        mod = JSON.parse(await localCache.getSteamMod(id, steamLanguage))
-        this.patchModConfig(id)
-      }
-      catch (e) {
-        mod = { id }
-      }
+
+      const mod: Mod = JSON.parse(await localCache.getSteamMod(id, steamLanguage))
+      this.patchModConfig(id)
+
       this.loading = this.loading.filter(i => i !== id)
       return mod
     },
@@ -142,12 +140,39 @@ export const useModStore = defineStore('mod', {
       const mod = { ...this._list[id] }
       this.loading.push(id)
       try {
-        mod.title = await localCache.translate(mod.title, false)
+        let res = await localCache.translate(mod.title, false)
+        if (res)
+          mod.title = res
         await sleep(1100)
-        mod.steamDescription = await localCache.translate(mod.steamDescription, true)
+        res = await localCache.translate(mod.steamDescription, true)
+        if (res)
+          mod.steamDescription = res
       }
       catch {
         console.log(`Failed to translate mod info for ${id}`)
+      }
+      this.$patch({ _list: { [id]: mod } })
+      store.set('mod-list', this._list)
+      this.loading = this.loading.filter(i => i !== id)
+    },
+    async translateConfig(id: string) {
+      const mod = { ...this._list[id] }
+      this.loading.push(id)
+      if (mod.originConfig) {
+        try {
+          const translateContent = mod.originConfig
+            .map(config => `${config.label}↔️${config.hover}↔️${config.options.map(option => option.hover).join('↕️')}`)
+            .join('↩️')
+          const res = (await localCache.translate(translateContent, false)).split('↩️')
+          mod.originConfig = mod.originConfig.map((config, idx) => {
+            const [label, hover, options] = res[idx].split('↔️')
+            const optionList = options.split('↕️')
+            return { ...config, label, hover, options: config.options.map((oItem, oIdx) => ({ ...oItem, hover: optionList[oIdx] })) }
+          })
+        }
+        catch (err) {
+          console.log(err)
+        }
       }
       this.$patch({ _list: { [id]: mod } })
       store.set('mod-list', this._list)
@@ -166,10 +191,9 @@ export const useModStore = defineStore('mod', {
           return {
             ...item,
             default: `${item.default}`,
-            options: item.options.map((i: { description: any; data: any }) => ({ label: i.description, value: `${i.data}` })),
+            options: item.options.map((i: { description: any; data: any; hover: any }) => ({ label: i.description, value: `${i.data}`, hover: i.hover })),
           }
         })
-        console.log(this._list[id].originConfig)
         await store.set('mod-list', this._list)
       }
       catch {
@@ -191,7 +215,7 @@ export const useModStore = defineStore('mod', {
         this._list = {}
       else
         this._list = val
-      this.detectModList()
+      // this.detectModList()
     },
   },
 })
