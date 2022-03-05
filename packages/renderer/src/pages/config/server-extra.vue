@@ -43,15 +43,15 @@ import type { ServerExtra } from '../../store/config'
 import { useConfigStore } from '../../store/config'
 
 const { t } = useI18n()
-const config = useConfigStore()
+const configStore = useConfigStore()
 const message = useMessage()
 
 const formRef = ref<any>(null)
 
-const model = ref<ServerExtra>({ setup: '' })
-if (config.serverExtra)
-  model.value = { ...model.value, ...config.serverExtra }
-
+const model = ref<ServerExtra>({
+  setup: 'steamcmd/~/myDSTserver',
+  ...toRaw(configStore.serverExtra),
+})
 const rules = ref({
   setup: [{ required: true, message: t('server.setup-required') }],
 })
@@ -61,7 +61,7 @@ const validateDataSave = (e: Event) => {
   formRef.value.validate((errors: any) => {
     if (!errors) {
       const val = toRaw(model.value)
-      config.updateServerExtra(val)
+      configStore.updateServerExtra(val)
       message.success(t('save.success'))
     }
   })

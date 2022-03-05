@@ -10,26 +10,46 @@
       </template>
     </template>
     <n-select
-      :value="configItem.default"
+      v-if="['string','number'].includes(typeof configValue)"
+      v-model:value="configValue"
       placeholder="Select"
       :options="configItem.options"
       :render-option="renderOption"
     />
+    <n-switch v-else v-model:value="configValue">
+      <template #checked>
+        {{ t('switch.enabled') }}
+      </template>
+      <template #unchecked>
+        {{ t('switch.disabled') }}
+      </template>
+    </n-switch>
   </n-form-item>
 </template>
 
 <script lang="ts" setup>
 import { NTooltip } from 'naive-ui'
 import type { VNode } from 'vue'
-import type { ModConfig } from '../store/mod'
+import type { ModConfig } from '../../../store/mod'
+
 const { t } = useI18n()
 
-const props = defineProps<{ configItem: ModConfig }>()
+const props = defineProps<{ configItem: ModConfig; value?: string | number | boolean }>()
+const emits = defineEmits(['update:value'])
 
-const value = ref<string | number | boolean>(props.configItem.default)
+const configValue = computed({
+  set: val => emits('update:value', val),
+  get: () => {
+    if (!props.value) {
+      emits('update:value', props.configItem.default)
+      return ''
+    }
+    return props.value
+  },
+})
 
 const renderOption = ({ node }: { node: VNode }) => {
-  const hover = props.configItem.options.find(i => i.value === value.value)?.hover
+  const hover = props.configItem.options.find(i => i.value === configValue.value)?.hover
   if (hover) {
     return h(NTooltip, null, {
       trigger: () => node,

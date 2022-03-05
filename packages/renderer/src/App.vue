@@ -6,12 +6,13 @@
 
 <script setup lang="ts">
 import { useConfigStore } from './store/config'
-import { sshOperate } from './utils/ssh-operate'
+import useConfigFunc from './hooks/useConfigFunc'
 
-const config = useConfigStore()
+const configStore = useConfigStore()
+const { connectServer } = useConfigFunc()
 
 ;(async() => {
-  await config.initState()
-  await sshOperate.connect({ ...config.server })
+  await configStore.initState()
+  await connectServer()
 })()
 </script>

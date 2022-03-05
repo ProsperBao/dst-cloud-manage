@@ -58,7 +58,6 @@
 <script lang="ts" setup>
 import type { Config } from 'node-ssh'
 import { useMessage } from 'naive-ui'
-import { store } from '../../utils/electron-store'
 import { useConfigStore } from '../../store/config'
 import { sshOperate } from '../../utils/ssh-operate'
 
@@ -67,16 +66,13 @@ const config = useConfigStore()
 const message = useMessage()
 
 const formRef = ref<any>(null)
-
 const model = ref<Config>({
   host: '',
   port: 22,
   username: '',
   password: '',
+  ...toRaw(config.server),
 })
-if (config.server)
-  model.value = { ...model.value, ...config.server }
-
 const rules = ref({
   host: [{ required: true, message: t('server.host-required') }],
   port: [{ required: true, message: t('server.port-required') }],
@@ -85,16 +81,14 @@ const rules = ref({
 })
 
 enum ConnectFlag {
-  wait,
-  succeed,
-  fail,
+  Wait,
+  Succeed,
+  Fail,
 }
-
-const connectFlag = ref<ConnectFlag>(ConnectFlag.wait)
+const connectFlag = ref<ConnectFlag>(ConnectFlag.Wait)
 const connectMap = ['', 'primary', 'error']
-
 const validateDataSave = (e: Event) => {
-  if (connectFlag.value !== ConnectFlag.succeed) return message.error(t('save.connect-fail'))
+  if (connectFlag.value !== ConnectFlag.Succeed) return message.error(t('save.connect-fail'))
   e.preventDefault()
   formRef.value.validate((errors: any) => {
     if (!errors) {
@@ -112,11 +106,11 @@ const validateServerConnect = (e: Event) => {
       try {
         const val = toRaw(model.value)
         await sshOperate.testConnect(toRaw({ ...val }))
-        connectFlag.value = ConnectFlag.succeed
+        connectFlag.value = ConnectFlag.Succeed
         message.success(t('alert.connect-success'))
       }
       catch (error: any) {
-        connectFlag.value = ConnectFlag.fail
+        connectFlag.value = ConnectFlag.Fail
         message.error(error.message || t('alert.connect-error'), { closable: true })
       }
     }

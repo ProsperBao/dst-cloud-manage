@@ -1,5 +1,5 @@
 <template>
-  <template v-if="!config.lockFunc">
+  <template v-if="!configStore.lockFunc && !modStore.lockModFunc">
     <slot />
   </template>
   <n-result
@@ -11,7 +11,7 @@
   >
     <template #footer>
       <n-space justify="center">
-        <n-button @click="refreshMod">
+        <n-button @click="refresh">
           {{ t('button.refresh') }}
         </n-button>
         <n-button @click="$router.push({ path: '/config/server' })">
@@ -25,21 +25,15 @@
 <script lang="ts" setup>
 import { useMessage } from 'naive-ui'
 import { useConfigStore } from '../store/config'
-import { sshOperate } from '../utils/ssh-operate'
-
-const emits = defineEmits(['refreshMod'])
+import useConfigFunc from '../hooks/useConfigFunc'
+import { useModStore } from '../store/mod'
 
 const { t } = useI18n()
-const config = useConfigStore()
+const configStore = useConfigStore()
+const modStore = useModStore()
 const message = useMessage()
+const { connectServer } = useConfigFunc()
 
-const refreshMod = async() => {
-  try {
-    await sshOperate.connect({ ...config.server })
-    emits('refreshMod')
-  }
-  catch {
-    message.error('连接服务器失败')
-  }
-}
+const refresh = async() => !await connectServer() && message.error('连接服务器失败')
+
 </script>

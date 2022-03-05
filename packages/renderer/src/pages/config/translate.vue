@@ -69,11 +69,10 @@ import { useMessage } from 'naive-ui'
 import { translateBaiduOptions } from '../../config/translate'
 import type { Translate } from '../../store/config'
 import { useConfigStore } from '../../store/config'
-import { store } from '../../utils/electron-store'
 
 const { t } = useI18n()
 const message = useMessage()
-const config = useConfigStore()
+const configStore = useConfigStore()
 
 const formRef = ref<any>(null)
 const model = ref<Translate>({
@@ -81,39 +80,29 @@ const model = ref<Translate>({
   key: '',
   from: 'en',
   to: 'zh',
+  ...toRaw(configStore.translate),
 })
 const rules = ref({
-  appid: [
-    { required: true, message: t('translate.bd-appid-required') },
-  ],
-  key: [
-    { required: true, message: t('translate.bd-key-required') },
-  ],
-  from: [
-    { required: true, message: t('translate.from-required') },
-  ],
-  to: [
-    { required: true, message: t('translate.to-required') },
-  ],
+  appid: [{ required: true, message: t('translate.bd-appid-required') }],
+  key: [{ required: true, message: t('translate.bd-key-required') }],
+  from: [{ required: true, message: t('translate.from-required') }],
+  to: [{ required: true, message: t('translate.to-required') }],
 })
 
 const computedFrom = computed(() => translateBaiduOptions.filter(item => item.value !== model.value.to))
 const computedTo = computed(() => translateBaiduOptions.filter(item => item.value !== model.value.from))
 
 const toBaiduApi = () => window.open('https://fanyi-api.baidu.com/')
+
 const validateDataSave = (e: Event) => {
   e.preventDefault()
   formRef.value.validate((errors: any) => {
     if (!errors) {
-      config.updateTranslate(toRaw(model.value))
+      configStore.updateTranslate(toRaw(model.value))
       message.success(t('save.success'))
     }
   })
 }
-
-(async() => {
-  model.value = await store.get('config-translate')
-})()
 </script>
 
 <style>

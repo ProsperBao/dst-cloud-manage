@@ -25,10 +25,7 @@ export type stateKey = keyof ConfigState
 export const useConfigStore = defineStore('config', {
   state: (): ConfigState => ({
     server: {},
-    serverExtra: {
-      setup: 'steamcmd/~/myDSTserver',
-      cluster: 1,
-    },
+    serverExtra: {},
     translate: {},
     lockFunc: false,
   }),
@@ -36,21 +33,28 @@ export const useConfigStore = defineStore('config', {
   actions: {
     async initState() {
       this.server = await store.get('config-server')
-      this.serverExtra = Object.assign({}, this.serverExtra, await store.get('config-serverExtra'))
-
+      this.serverExtra = { ...this.serverExtra, ...await store.get('config-server-extra') }
       this.translate = await store.get('config-translate')
     },
+
     async updateServer(value: Config) {
       this.server = value
-      store.set('config-server', { ...value })
+      store.set('config-server', toRaw(value))
     },
+
     async updateTranslate(value: Translate) {
       this.translate = value
-      store.set('config-translate', { ...value })
+      store.set('config-translate', toRaw(value))
     },
+
     async updateServerExtra(value: ServerExtra) {
       this.serverExtra = value
-      store.set('config-server-extra', { ...value })
+      store.set('config-server-extra', toRaw(value))
+    },
+
+    setLockFunc(lockFunc: boolean): boolean {
+      this.lockFunc = lockFunc
+      return lockFunc
     },
   },
 })

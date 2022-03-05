@@ -24,7 +24,7 @@ export interface Mod {
 
 export interface ModApplyConfig {
   enabled: boolean
-  configuration_options: Record<string, boolean | number>
+  configuration_options: Record<string, boolean | number | string>
 }
 
 export interface ModConfig {
@@ -47,10 +47,12 @@ export const useModStore = defineStore('mod', {
     _list: Record<string, Mod>
     loading: string[]
     serverList: string[]
+    lockModFunc: boolean
   } => ({
     _list: {},
     loading: [],
     serverList: [],
+    lockModFunc: false,
   }),
   getters: {
     list: (state): Mod[] => {
@@ -132,6 +134,7 @@ export const useModStore = defineStore('mod', {
         await this.detectModList()
       }
     },
+
     /**
      * transform mod description
      * @param id mod id
@@ -159,34 +162,30 @@ export const useModStore = defineStore('mod', {
       const mod = { ...this._list[id] }
       this.loading.push(id)
       if (mod.originConfig) {
-        try {
-          const translateContent = mod.originConfig
-            .map(config => `${config.label}↔️${config.hover}↔️${config.options.map(option => option.hover).join('↕️')}`)
-            .join('↩️')
-          const res = (await localCache.translate(translateContent, false)).split('↩️')
-          mod.originConfig = mod.originConfig.map((config, idx) => {
-            const [label, hover, options] = res[idx].split('↔️')
-            const optionList = options.split('↕️')
-            return { ...config, label, hover, options: config.options.map((oItem, oIdx) => ({ ...oItem, hover: optionList[oIdx] })) }
-          })
-        }
-        catch (err) {
-          console.log(err)
-        }
+        const translateContent = mod.originConfig
+          .map(config => `${config.label}↔️${config.hover || '❌'}↔️${config.options.map(option => option.hover).join('↕️')}`)
+          .join('↩️')
+        const res = (await localCache.translate(translateContent, false)).split('↩️')
+        mod.originConfig = mod.originConfig.map((config, idx) => {
+          const [label, hover, options] = res[idx].split('↔️')
+          const optionList = options.split('↕️')
+          return { ...config, label, hover: hover !== '❌' ? hover : '', options: config.options.map((oItem, oIdx) => ({ ...oItem, hover: optionList[oIdx] })) }
+        })
       }
       this.$patch({ _list: { [id]: mod } })
       store.set('mod-list', this._list)
       this.loading = this.loading.filter(i => i !== id)
     },
+
     /**
      * get mod config by server modinfo.lua file
      * @param id mod id
      */
     async patchModConfig(id: string) {
       if (!this._list[id]) return
-      const config = useConfigStore()
+      const configStore = useConfigStore()
       try {
-        const modConfig = await sshOperate.serverGetModConfig(config.serverExtra.setup || '', config.serverExtra.cluster || 1, id)
+        const modConfig = await sshOperate.serverGetModConfig(configStore.serverExtra.setup || '', configStore.serverExtra.cluster || 1, id)
         this._list[id].originConfig = (JSON.parse(modConfig) || []).map((item: any) => {
           return {
             ...item,
@@ -200,22 +199,39 @@ export const useModStore = defineStore('mod', {
         this._list[id].originConfig = []
       }
     },
-
     async patchApplyConfig() {
       const config = useConfigStore()
       const res = await sshOperate.serverGetApplyConfig(config.serverExtra.cluster || 1)
-      console.log(JSON.parse(res))
+      const applyConfig = JSON.parse(res)
+      this.serverList.forEach((id) => {
+        this._list[id].applyConfig = applyConfig[id]
+      })
+    },
+
+    async setModConfig(id: string, applyConfig: ModApplyConfig) {
+      console.log(id, applyConfig)
+    },
+    async setModEnabledStatus(id: string, enabled: boolean) {
+      const config = this._list[id]
+      if (config.applyConfig)
+        config.applyConfig.enabled = enabled
+      this._list[id] = config
+      await store.set('mod-list', this._list)
+      // TODO 同步到服务器
     },
 
     async initState(serverList: string[]) {
       this.serverList = serverList
       const val = await store.get('mod-list')
-      console.log(val)
       if (!Object.keys(val).length)
         this._list = {}
       else
         this._list = val
-      // this.detectModList()
+      this.detectModList()
+    },
+
+    setLockModFunc(lockModFunc: boolean) {
+      this.lockModFunc = lockModFunc
     },
   },
 })

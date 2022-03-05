@@ -56,6 +56,7 @@ other:
   dateFormat: YYYY-MM-DD HH:mm:ss
   steamLanguage: schinese
 result:
+  empty-mod: 服务器暂无安装mod
   mod-list-locked: 暂无信息
   mod-list-locked-desc: 请先配置好服务器信息，并连接成功后再试
 save:
@@ -73,6 +74,9 @@ server:
   setup-required: 请输入服务器安装位置
   username: 用户名
   username-required: 请输入用户名
+switch:
+  disabled: 禁用
+  enabled: 启用
 title:
   mod-list: 服务器已安装模组
 translate:
