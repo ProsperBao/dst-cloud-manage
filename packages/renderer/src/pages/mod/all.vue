@@ -18,7 +18,7 @@
       <n-list v-if="modStore.list.length > 0" bordered>
         <n-list-item v-for="item in modStore.list" :key="item.id">
           <n-spin :show="modStore.loading.includes(item.id)">
-            <ModItem :mod="item" />
+            <ModItem :mod="item" :readonly="true" />
           </n-spin>
         </n-list-item>
       </n-list>
@@ -37,16 +37,16 @@ const modStore = useModStore()
 
 const forceRefresh = () => modStore.forceUpdate()
 
-;(async() => {
-  try {
-    modStore.initState(await sshOperate.getServerSetupMods('steamcmd/~/myDSTserver'))
-    modStore.setLockModFunc(false)
-  }
-  catch {
-    modStore.setLockModFunc(true)
-  }
-  modStore.patchApplyConfig()
-})()
+// ;(async() => {
+//   try {
+//     modStore.initState(await sshOperate.getServerSetupMods('steamcmd/~/myDSTserver'))
+//     modStore.setLockModFunc(false)
+//   }
+//   catch {
+//     modStore.setLockModFunc(true)
+//   }
+//   modStore.patchApplyConfig()
+// })()
 </script>
 
 <style>

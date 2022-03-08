@@ -1,26 +1,7 @@
+import type { ConfigState, ServerExtra, Translate } from 'dst'
 import type { Config } from 'node-ssh'
-import { acceptHMRUpdate, defineStore } from 'pinia'
+import { defineStore } from 'pinia'
 import { store } from '../utils/electron-store'
-
-export interface Translate {
-  appid?: string
-  key?: string
-  from?: string
-  to?: string
-}
-export interface ServerExtra {
-  setup?: string
-  cluster?: number
-}
-export interface ConfigState{
-  server: Config
-  translate: Translate
-  serverExtra: ServerExtra
-  lockFunc: boolean
-  [key: string]: Config | Translate | ServerExtra| boolean
-}
-
-export type stateKey = keyof ConfigState
 
 export const useConfigStore = defineStore('config', {
   state: (): ConfigState => ({
@@ -58,6 +39,3 @@ export const useConfigStore = defineStore('config', {
     },
   },
 })
-
-if (import.meta.hot)
-  import.meta.hot.accept(acceptHMRUpdate(useConfigStore, import.meta.hot))

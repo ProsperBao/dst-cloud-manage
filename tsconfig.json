@@ -11,11 +11,9 @@
     "baseUrl": "./",
     "strict": true,
     "paths": {
-      "*": [
-        "@types/*"
-      ]
+      "*": [ "@types/*"]
     },
     "allowSyntheticDefaultImports": true,
     "skipLibCheck": true
-  }
+  },
 }

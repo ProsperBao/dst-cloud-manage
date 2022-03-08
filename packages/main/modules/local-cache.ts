@@ -1,9 +1,6 @@
 import { ipcMain } from 'electron'
-
 import { MD5 } from 'crypto-js'
-
-import type { Translate } from '../../renderer/src/store/config'
-import type { Mod } from '../../renderer/src/store/mod'
+import type { Mod, Translate } from 'dst'
 
 const axios = require('axios')
 
@@ -17,15 +14,14 @@ export const localCache = {
     try {
       const { data } = await axios.get(modInfoUrl, {
         headers: {
-          Cookie: `Steam_Language=${steamLanguage}`,
-          // 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.69 Safari/537.36 Edg/95.0.1020.53',
+          'Cookie': `Steam_Language=${steamLanguage}`,
+          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.69 Safari/537.36 Edg/95.0.1020.53',
         },
         timeout: 5000,
       })
       return JSON.stringify(localCache.handleModHtml(data, id))
     }
     catch (e) {
-      console.log(e)
       return JSON.stringify({ id })
     }
   },

@@ -1,46 +1,12 @@
 import { defineStore } from 'pinia'
+import type { Mod } from 'dst'
 import { i18n } from '../modules/i18n'
 import { store } from '../utils/electron-store'
 import { localCache } from '../utils/local-cache'
 import { sshOperate } from '../utils/ssh-operate'
 import { sleep } from '../utils/time'
-import { useConfigStore } from './config'
 
 const MAX_DETECTION_NUM = 3
-
-export interface Mod {
-  title?: string
-  steamDescription?: string
-  id: string
-  icon?: string
-  size?: string
-  lastUpdateDate?: string
-  releaseDate?: string
-  lastDetectionTime?: string
-  originConfig?: ModConfig[]
-  applyConfig?: ModApplyConfig
-  [key: string]: string | undefined | ModConfig[] | ModApplyConfig
-}
-
-export interface ModApplyConfig {
-  enabled: boolean
-  configuration_options: Record<string, boolean | number | string>
-}
-
-export interface ModConfig {
-  default: boolean
-  hover: string
-  label: string
-  name: string
-  options: ModConfigOption[]
-}
-export interface ModConfigOption {
-  data?: boolean | number
-  description?: string
-  hover?: string
-  value: boolean | number
-  label: string
-}
 
 export const useModStore = defineStore('mod', {
   state: (): {
@@ -48,11 +14,14 @@ export const useModStore = defineStore('mod', {
     loading: string[]
     serverList: string[]
     lockModFunc: boolean
+    specialModCluster: boolean
   } => ({
     _list: {},
     loading: [],
     serverList: [],
     lockModFunc: false,
+
+    specialModCluster: true,
   }),
   getters: {
     list: (state): Mod[] => {
@@ -178,15 +147,14 @@ export const useModStore = defineStore('mod', {
     },
 
     /**
-     * get mod config by server modinfo.lua file
+     * 获取模组配置文件数据并处理
      * @param id mod id
      */
     async patchModConfig(id: string) {
       if (!this._list[id]) return
-      const configStore = useConfigStore()
       try {
-        const modConfig = await sshOperate.serverGetModConfig(configStore.serverExtra.setup || '', configStore.serverExtra.cluster || 1, id)
-        this._list[id].originConfig = (JSON.parse(modConfig) || []).map((item: any) => {
+        const modConfig = await sshOperate.getModConfig(id)
+        this._list[id].originConfig = modConfig.map((item: any) => {
           return {
             ...item,
             default: `${item.default}`,
@@ -199,27 +167,7 @@ export const useModStore = defineStore('mod', {
         this._list[id].originConfig = []
       }
     },
-    async patchApplyConfig() {
-      const config = useConfigStore()
-      const res = await sshOperate.serverGetApplyConfig(config.serverExtra.cluster || 1)
-      const applyConfig = JSON.parse(res)
-      this.serverList.forEach((id) => {
-        this._list[id].applyConfig = applyConfig[id]
-      })
-    },
-
-    async setModConfig(id: string, applyConfig: ModApplyConfig) {
-      console.log(id, applyConfig)
-    },
-    async setModEnabledStatus(id: string, enabled: boolean) {
-      const config = this._list[id]
-      if (config.applyConfig)
-        config.applyConfig.enabled = enabled
-      this._list[id] = config
-      await store.set('mod-list', this._list)
-      // TODO 同步到服务器
-    },
-
+    // 初始化数据
     async initState(serverList: string[]) {
       this.serverList = serverList
       const val = await store.get('mod-list')
@@ -229,9 +177,21 @@ export const useModStore = defineStore('mod', {
         this._list = val
       this.detectModList()
     },
-
+    // 模组功能上锁
     setLockModFunc(lockModFunc: boolean) {
       this.lockModFunc = lockModFunc
     },
+    // 专门用来获取模组配置
+    async createSpecialModConfigCluster() {
+      return await sshOperate.createSpecialModConfigCluster()
+    },
   },
 })
+// TODO: 初始化所有 mod 配置
+// 触发方式 1.添加 mod 2.手动触发 3.一键部署
+// 1.新建一个专门用于初始化 mod 配置的存档
+// 2.把所有 mod 开启，配置为空
+// 3.然后启动之后等待更新完成之后干掉线程，然后以后所有mod都从里面读取配置
+
+// TODO: 存档mod列表
+// 根据存档 id 去获取mod配置，其他直接读取所有mod，只是差异化显示配置

@@ -28,9 +28,9 @@
 </template>
 
 <script lang="ts" setup>
+import type { ModConfig } from 'dst'
 import { NTooltip } from 'naive-ui'
 import type { VNode } from 'vue'
-import type { ModConfig } from '../../../store/mod'
 
 const { t } = useI18n()
 

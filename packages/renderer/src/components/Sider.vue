@@ -46,12 +46,12 @@ const menuOptions = [
         RouterLink,
         {
           to: {
-            path: '/mod/list',
+            path: '/cluster/list',
           },
         },
-        { default: () => t('menu.mod') },
+        { default: () => t('breadcrumb.cluster') },
       ),
-    key: 'go-mod-list',
+    key: 'go-cluster-list',
     icon: renderIcon(IconModelAlt),
   },
   {

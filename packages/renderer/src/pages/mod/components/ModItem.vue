@@ -11,7 +11,8 @@
     </template>
     <template #header-extra>
       <n-space align="center">
-        <n-switch :value="active" size="large" @click.stop="modStore.setModEnabledStatus(props.mod.id, !active)">
+        <!-- <n-switch :value="active" size="large" @click.stop="modStore.setModEnabledStatus(props.mod.id, !active)"> -->
+        <n-switch :value="active" size="large">
           <template #checked>
             {{ t('switch.enabled') }}
           </template>
@@ -99,22 +100,20 @@
 </template>
 
 <script lang="ts" setup>
-import type { Mod } from '../../../store/mod'
+import type { Mod } from 'dst'
 import { useModStore } from '../../../store/mod'
 import ModConfigItem from './ModConfigItem.vue'
 
-const props = defineProps<{ mod: Mod }>()
+const props = defineProps<{ mod: Mod; readonly: boolean }>()
 
 const { t } = useI18n()
 const modStore = useModStore()
 // config list
 const configList = computed(() => (props.mod.originConfig || []).filter(i => i.options.length !== 1 && i.options[0].label !== ''))
 // mod enabled state
-const active = computed(() => props.mod.applyConfig?.enabled || false)
+const active = computed(() => false)
 // mod config state
-const configState = ref({
-  ...props.mod.applyConfig?.configuration_options,
-})
+const configState = ref<any>({})
 // translate mod info
 const translate = (id: string) => modStore.translate(id)
 const translateConfig = (id: string) => modStore.translateConfig(id)
@@ -124,12 +123,12 @@ const forceRefresh = (id: string) => modStore.forceUpdate(id)
 const openSteamModDetail = (modSteamId: string) => window.open(`https://steamcommunity.com/sharedfiles/filedetails?id=${modSteamId}`)
 // reset default mod config
 const resetConfig = () => {
-  props.mod.originConfig?.forEach((i) => {
-    configState.value[i.name] = i.default
-  })
+  // props.mod.originConfig?.forEach((i) => {
+  //   configState.value[i.name] = i.default
+  // })
 }
 // apply mod config
 const applyModConfig = () => {
-  console.log(configState.value)
+  // modStore.applyServerModConfig()
 }
 </script>

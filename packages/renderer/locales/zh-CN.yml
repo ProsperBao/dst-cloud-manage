@@ -8,8 +8,8 @@ alert:
   warring: 请注意
   warring-server-content: 请注意，软件不会校验端口和域名是否有效，是否有效请点击 "连接测试"
 breadcrumb:
+  cluster: 存档
   config: 配置
-  func: 模组
   home: DST Cloud Manage
   list: 列表
   mod: 模组
@@ -18,7 +18,10 @@ breadcrumb:
   translate: 翻译
 button:
   back: 返回
+  cluster-backup: 存档备份
+  cluster-delete: 删除存档
   force-refresh: 强制刷新
+  manage-mod: 管理模组
   mod-config: mod配置
   quickly-install: 一键部署
   refresh: 刷新
@@ -56,6 +59,7 @@ other:
   dateFormat: YYYY-MM-DD HH:mm:ss
   steamLanguage: schinese
 result:
+  empty-cluster: 没有任何存档
   empty-mod: 服务器暂无安装mod
   mod-list-locked: 暂无信息
   mod-list-locked-desc: 请先配置好服务器信息，并连接成功后再试
@@ -77,6 +81,11 @@ server:
 switch:
   disabled: 禁用
   enabled: 启用
+tag:
+  game-mode: 游戏模式
+  game-mode-survival: 生存模式
+  max-players: 最大人数
+  pvp: 玩家战斗
 title:
   mod-list: 服务器已安装模组
 translate:
