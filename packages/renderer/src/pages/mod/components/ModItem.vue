@@ -10,7 +10,7 @@
       {{ mod.title }}
     </template>
     <template #header-extra>
-      <n-space align="center">
+      <n-space align="center" class="w-220">
         <!-- <n-switch :value="active" size="large" @click.stop="modStore.setModEnabledStatus(props.mod.id, !active)"> -->
         <n-switch :value="active" size="large">
           <template #checked>
@@ -100,35 +100,60 @@
 </template>
 
 <script lang="ts" setup>
-import type { Mod } from 'dst'
+import type { ClusterModConfigItem, ClusterModConfigOptions, Mod } from 'dst'
+import { useMessage } from 'naive-ui'
+import { useClusterStore } from '../../../store/cluster'
 import { useModStore } from '../../../store/mod'
 import ModConfigItem from './ModConfigItem.vue'
 
-const props = defineProps<{ mod: Mod; readonly: boolean }>()
+const props = defineProps<{ mod: Mod; readonly?: boolean; cluster?: string; config: ClusterModConfigItem }>()
 
 const { t } = useI18n()
+const message = useMessage()
 const modStore = useModStore()
-// config list
+const clusterStore = useClusterStore()
+// 模组配置选项
 const configList = computed(() => (props.mod.originConfig || []).filter(i => i.options.length !== 1 && i.options[0].label !== ''))
-// mod enabled state
-const active = computed(() => false)
-// mod config state
-const configState = ref<any>({})
-// translate mod info
+// 模组启用状态
+const active = computed(() => props.config.enabled || false)
+// 模组配置数据
+const configState = ref<ClusterModConfigOptions>({
+  ...props.config.configuration_options,
+})
+// 翻译模组详情
 const translate = (id: string) => modStore.translate(id)
+// 翻译模组配置详情
 const translateConfig = (id: string) => modStore.translateConfig(id)
-// force refresh mod info
+
+// 强制刷新所有模组数据
 const forceRefresh = (id: string) => modStore.forceUpdate(id)
-// open steam mod detail
+// 打开模组 Steam 详情
 const openSteamModDetail = (modSteamId: string) => window.open(`https://steamcommunity.com/sharedfiles/filedetails?id=${modSteamId}`)
-// reset default mod config
+
+// 重置默认配置
 const resetConfig = () => {
-  // props.mod.originConfig?.forEach((i) => {
-  //   configState.value[i.name] = i.default
-  // })
+  props.mod.originConfig?.forEach((i) => {
+    configState.value[i.name] = i.default
+  })
 }
-// apply mod config
-const applyModConfig = () => {
-  // modStore.applyServerModConfig()
+// 应用模组配置
+const applyModConfig = async() => {
+  if (props.cluster) {
+    clusterStore.setClusterModConfig(props.cluster, props.mod.id, {
+      enabled: props.config.enabled,
+      configuration_options: configState.value,
+    })
+    if (await clusterStore.applyModConfig(props.cluster))
+      message.success(t('message.apply-mod-config-success'))
+    else
+      message.error(t('message.apply-mod-config-fail'))
+  }
+  else { message.error(t('message.apply-mod-config-fail')) }
 }
 </script>
+
+<style>
+.w-220{
+  width: 220px;
+}
+</style>

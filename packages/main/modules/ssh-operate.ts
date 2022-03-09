@@ -165,6 +165,13 @@ class SSHOperate {
     return res.stdout || ''
   }
 
+  async echoContent2File(path: string, content: string): Promise<boolean> {
+    const connection = this.getConnection()
+    const res = await connection.execCommand(`echo '${content}' > ${path}`)
+    console.log(res)
+    return res.stderr === ''
+  }
+
   async createDirDirectory(path: string): Promise<boolean> {
     const connection = this.getConnection()
     const res = await connection.execCommand(`mkdir ${path}`)

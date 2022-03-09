@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import type { Mod } from 'dst'
+import type { Mod, ModConfig } from 'dst'
 import { i18n } from '../modules/i18n'
 import { store } from '../utils/electron-store'
 import { localCache } from '../utils/local-cache'
@@ -39,7 +39,8 @@ export const useModStore = defineStore('mod', {
       this.loading.push(id)
 
       const mod: Mod = JSON.parse(await localCache.getSteamMod(id, steamLanguage))
-      this.patchModConfig(id)
+      mod.originConfig = await this.patchModConfig(id)
+      console.log(mod.id, mod.title, mod.originConfig)
 
       this.loading = this.loading.filter(i => i !== id)
       return mod
@@ -133,11 +134,13 @@ export const useModStore = defineStore('mod', {
       if (mod.originConfig) {
         const translateContent = mod.originConfig
           .map(config => `${config.label}↔️${config.hover || '❌'}↔️${config.options.map(option => option.hover).join('↕️')}`)
-          .join('↩️')
+          .join('↩️\n')
+          .replace(/\n/g, '')
+        console.log(translateContent)
         const res = (await localCache.translate(translateContent, false)).split('↩️')
         mod.originConfig = mod.originConfig.map((config, idx) => {
           const [label, hover, options] = res[idx].split('↔️')
-          const optionList = options.split('↕️')
+          const optionList = (options || '').split('↕️')
           return { ...config, label, hover: hover !== '❌' ? hover : '', options: config.options.map((oItem, oIdx) => ({ ...oItem, hover: optionList[oIdx] })) }
         })
       }
@@ -150,32 +153,36 @@ export const useModStore = defineStore('mod', {
      * 获取模组配置文件数据并处理
      * @param id mod id
      */
-    async patchModConfig(id: string) {
-      if (!this._list[id]) return
+    async patchModConfig(id: string): Promise<ModConfig[]> {
       try {
         const modConfig = await sshOperate.getModConfig(id)
-        this._list[id].originConfig = modConfig.map((item: any) => {
+        return modConfig.map((item: any) => {
           return {
             ...item,
             default: `${item.default}`,
             options: item.options.map((i: { description: any; data: any; hover: any }) => ({ label: i.description, value: `${i.data}`, hover: i.hover })),
           }
         })
-        await store.set('mod-list', this._list)
       }
       catch {
-        this._list[id].originConfig = []
+        return []
       }
     },
     // 初始化数据
-    async initState(serverList: string[]) {
-      this.serverList = serverList
-      const val = await store.get('mod-list')
-      if (!Object.keys(val).length)
-        this._list = {}
-      else
-        this._list = val
-      this.detectModList()
+    async initState() {
+      this.serverList = await sshOperate.getSetupMods()
+      try {
+        const val = await store.get('mod-list')
+        if (!Object.keys(val).length)
+          this._list = {}
+        else
+          this._list = val
+        this.detectModList()
+        this.setLockModFunc(false)
+      }
+      catch {
+        this.setLockModFunc(true)
+      }
     },
     // 模组功能上锁
     setLockModFunc(lockModFunc: boolean) {

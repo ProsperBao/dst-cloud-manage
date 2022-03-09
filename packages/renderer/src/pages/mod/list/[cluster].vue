@@ -18,7 +18,7 @@
       <n-list v-if="modStore.list.length > 0" bordered>
         <n-list-item v-for="item in modStore.list" :key="item.id">
           <n-spin :show="modStore.loading.includes(item.id)">
-            <ModItem :mod="item" :readonly="false" />
+            <ModItem :mod="item" :config="modConfig[item.id] || {}" :cluster="cluster.id" :readonly="false" />
           </n-spin>
         </n-list-item>
       </n-list>
@@ -28,26 +28,20 @@
 </template>
 
 <script lang="ts" setup>
+import { useClusterStore } from '../../../store/cluster'
 import { useModStore } from '../../../store/mod'
-import { sshOperate } from '../../../utils/ssh-operate'
 import ModItem from '../components/ModItem.vue'
 
-defineProps<{ cluster: string }>()
+const props = defineProps<{ cluster: string }>()
 const { t } = useI18n()
 
 const modStore = useModStore()
-
+modStore.initState()
 const forceRefresh = () => modStore.forceUpdate()
 
-;(async() => {
-  try {
-    modStore.initState(await sshOperate.getSetupMods())
-    modStore.setLockModFunc(false)
-  }
-  catch {
-    modStore.setLockModFunc(true)
-  }
-})()
+const clusterStore = useClusterStore()
+const cluster = clusterStore.list.find(item => item.id === props.cluster)
+const modConfig = cluster?.modConfig || {}
 </script>
 
 <style>

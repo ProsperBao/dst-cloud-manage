@@ -48,6 +48,7 @@ export default defineConfig({
         'vue-router',
         'vue-i18n',
         '@vueuse/core',
+        'pinia',
       ],
       dts: 'src/auto-imports.d.ts',
     }),

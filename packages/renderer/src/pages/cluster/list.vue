@@ -20,7 +20,7 @@
                 </n-avatar>
               </template>
               <template #header>
-                {{ item.config.NETWORK.cluster_name }}
+                {{ item.config?.NETWORK?.cluster_name || t('result.empty-cluster-name') }}
               </template>
               <template #header-extra>
                 <n-button-group>
@@ -51,16 +51,16 @@
                 </n-button-group>
               </template>
               <template #description>
-                {{ item.config.NETWORK.cluster_description }}
+                {{ item.config?.NETWORK?.cluster_description || t('result.empty-cluster-description') }}
               </template>
               <n-space>
-                <n-tag size="small" type="success">
-                  {{ t("tag.game-mode") }}: {{ t(`tag.game-mode-${item.config.GAMEPLAY.game_mode}`) }}
+                <n-tag v-if="item.config?.GAMEPLAY?.game_mode" size="small" type="success">
+                  {{ t("tag.game-mode") }}: {{ t(`tag.game-mode-${item.config?.GAMEPLAY?.game_mode}`) }}
                 </n-tag>
-                <n-tag size="small" type="warning">
-                  {{ t("tag.max-players") }}: {{ item.config.GAMEPLAY.max_players }}
+                <n-tag v-if="item.config?.GAMEPLAY?.max_players" size="small" type="warning">
+                  {{ t("tag.max-players") }}: {{ item.config?.GAMEPLAY?.max_players }}
                 </n-tag>
-                <n-tag v-if="item.config.GAMEPLAY.pvp === 'true'" size="small" type="error">
+                <n-tag v-if="item.config?.GAMEPLAY?.pvp === 'true'" size="small" type="error">
                   {{ t("tag.pvp") }}
                 </n-tag>
               </n-space>
@@ -80,9 +80,7 @@ const { t } = useI18n()
 const router = useRouter()
 const clusterStore = useClusterStore()
 
-const toClusterModManage = (cluster: string) => {
-  router.push({ path: `/mod/list/${cluster}` })
-}
+const toClusterModManage = (cluster: string) => router.push({ path: `/mod/list/${cluster}` })
 
 if (clusterStore.list.length === 0)
   clusterStore.getClusterList()

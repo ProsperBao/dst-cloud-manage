@@ -3,6 +3,9 @@
     <n-grid-item>
       <QuicklyInstall class="index-btn-container" />
     </n-grid-item>
+    <n-grid-item>
+      <UpdateMod class="index-btn-container" />
+    </n-grid-item>
   </n-grid>
 </template>
 

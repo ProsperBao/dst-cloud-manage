@@ -33,6 +33,7 @@ button:
   translate: 翻译
   translate-mod: 翻译模组
   translate-mod-config: 翻译模组配置
+  update-mod: 更新模组
   view-steam: 查看Steam简介
 describe:
   last-update-date: 最后更新时间
@@ -55,14 +56,21 @@ menu:
   server: 服务器
   server-extra: 饥荒服务器
   translate: 翻译
+message:
+  apply-mod-config-fail: 应用模组配置失败
+  apply-mod-config-success: 应用模组配置成功
 other:
   dateFormat: YYYY-MM-DD HH:mm:ss
   steamLanguage: schinese
 result:
   empty-cluster: 没有任何存档
+  empty-cluster-description: 暂无描述
+  empty-cluster-name: 暂无配置
   empty-mod: 服务器暂无安装mod
   mod-list-locked: 暂无信息
   mod-list-locked-desc: 请先配置好服务器信息，并连接成功后再试
+  update-mod-failed: 更新模组失败
+  update-mod-success: 更新模组成功
 save:
   connect-fail: 请先点击连接测试按钮，待成功之后即可保存
   success: 保存成功

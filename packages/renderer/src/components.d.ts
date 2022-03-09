@@ -16,6 +16,7 @@ declare module 'vue' {
     LockFunc: typeof import('./components/LockFunc.vue')['default']
     QuicklyInstall: typeof import('./components/function/QuicklyInstall.vue')['default']
     Sider: typeof import('./components/Sider.vue')['default']
+    UpdateMod: typeof import('./components/function/UpdateMod.vue')['default']
   }
 }
 

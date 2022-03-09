@@ -3,10 +3,12 @@ export interface ClusterState{
 }
 
 // 存档模组配置
-export interface ClusterModConfig {
+export type ClusterModConfigOptions = Record<string, boolean | number | string>
+export interface ClusterModConfigItem {
   enabled: boolean // 启用状态
-  configuration_options: Record<string, boolean | number | string> // 配置选项
+  configuration_options: ClusterModConfigOptions // 配置选项
 }
+export type ClusterModConfig = Record<string, ClusterModConfigItem>
 
 // 基础存档属性
 export interface BaseClusterItem{
@@ -18,5 +20,5 @@ export interface BaseClusterItem{
 export interface ClusterItem extends BaseClusterItem{
   token: string // 存档 Token
   adminList: string[] // 管理员列表
-  modConfig: Record<string, ClusterModConfig> // 模组配置
+  modConfig: ClusterModConfig // 模组配置
 }

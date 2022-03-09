@@ -37,8 +37,12 @@ export const sshOperate = {
    * @returns 模组配置如果没有则为 {}
    */
   async getModConfig(id: string): Promise<ModConfig[]> {
-    const path = `~/steamcmd/~/myDSTserver/ugc_mods/mod_config/Master/content/322330/${id}/modinfo.lua`
-    const res = await invoke('gatFileContent', path)
+    let path = `~/myDSTserver/ugc_mods/mod_config/Master/content/322330/${id}/modinfo.lua`
+    let res = await invoke('gatFileContent', path)
+    if ((res ?? '') === '') {
+      path = `~/myDSTserver/mods/workshop-${id}/modinfo.lua`
+      res = await invoke('gatFileContent', path)
+    }
     try {
       return JSON.parse(await invoke('runLua', res))
     }
@@ -51,7 +55,7 @@ export const sshOperate = {
    * @returns 服务器订阅模组
    */
   async getSetupMods(): Promise<string[]> {
-    const path = '~/steamcmd/~/myDSTserver/mods/dedicated_server_mods_setup.lua'
+    const path = '~/myDSTserver/mods/dedicated_server_mods_setup.lua'
     const res = await invoke('gatFileContent', path)
     return res.split('\r\n').filter((mod: string) => !mod.includes('--') && mod.includes('ServerModSetup')).map((mod: string) => mod.split('\"')[1])
   },
@@ -60,7 +64,7 @@ export const sshOperate = {
    * @returns 服务器订阅模组集合
    */
   async getSetupModCollection(): Promise<string[]> {
-    const path = '~/steamcmd/~/myDSTserver/mods/dedicated_server_mods_setup.lua'
+    const path = '~/myDSTserver/mods/dedicated_server_mods_setup.lua'
     const res = await invoke('gatFileContent', path)
     return res.split('\r\n').filter((mod: string) => !mod.includes('--') && mod.includes('ServerModCollectionSetup')).map((mod: string) => mod.split('\"')[1])
   },
@@ -101,7 +105,7 @@ export const sshOperate = {
    */
   async getClusterModConfig(cluster: string): Promise<Record<string, any>> {
     const path = `~/.klei/DoNotStarveTogether/${cluster}/modoverrides.lua`
-    const res = await invoke('gatFileContent', path)
+    const res = await invoke('gatFileContent', path) || 'return {}'
     try {
       return JSON.parse(await invoke('runLua', `local configuration_options = ${res.substring(7).replace(/workshop-/g, '')}`))
     }
@@ -109,8 +113,14 @@ export const sshOperate = {
       return {}
     }
   },
+  async applyClusterModConfig(cluster: string, config: string): Promise<boolean> {
+    const path = `~/.klei/DoNotStarveTogether/${cluster}/modoverrides.lua`
+    console.log(path)
+    return await invoke('echoContent2File', path, config)
+  },
   // #endregion
 
+  // #region 服务器一键部署/更新模组相关
   /**
    * 执行专门用来升级模组
    * @returns 是否执行成功
@@ -126,10 +136,10 @@ export const sshOperate = {
         await invoke('echo2File', '', '~/.klei/DoNotStarveTogether/mod_config/Master/server.ini')
         await invoke('echo2File', '', '~/.klei/DoNotStarveTogether/mod_config/Caves/server.ini')
       }
-      invoke('exec', 'cd ~/steamcmd/~/myDSTserver/bin && ./dontstarve_dedicated_server_nullrenderer -cluster "mod_config" -monitor_parent_process', 'update-mod-config')
+      invoke('exec', 'cd ~/myDSTserver/bin && ./dontstarve_dedicated_server_nullrenderer -cluster "mod_config"', 'update-mod-config')
       for (let i = 0; i < 60 * 30; i++) {
         const log = await invoke('queryExecLog', 'update-mod-config')
-        if (/PendingConnection::Reset\(true\)/.test(log))
+        if (/Your Server Will Not Start/.test(log))
           break
         await sleep(2000)
       }
@@ -140,4 +150,6 @@ export const sshOperate = {
       return false
     }
   },
+
+  // #endregion
 }
