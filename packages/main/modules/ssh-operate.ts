@@ -141,14 +141,6 @@ class SSHOperate {
     })
   }
 
-  async applyServerModConfig(config: string, cluster = 1): Promise<boolean> {
-    const connection = this.getConnection()
-    const filePath = `~/.klei/DoNotStarveTogether/Cluster_${cluster}/modoverrides.lua`
-    console.log(`rm -rf ${filePath} echo '1' > ${filePath}`)
-    const res = await connection.execCommand(`rm -rf ${filePath} & echo '${config}' > ${filePath}`)
-    return res.stderr === ''
-  }
-
   // bash cmd
   async getDirectoryList(path: string, includePath = false): Promise<string[]> {
     const connection = this.getConnection()
@@ -168,7 +160,6 @@ class SSHOperate {
   async echoContent2File(path: string, content: string): Promise<boolean> {
     const connection = this.getConnection()
     const res = await connection.execCommand(`echo '${content}' > ${path}`)
-    console.log(res)
     return res.stderr === ''
   }
 

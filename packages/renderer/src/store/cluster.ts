@@ -71,77 +71,15 @@ export const useClusterStore = defineStore('cluster', {
       }).join(',\n')}\n}`
       return await sshOperate.applyClusterModConfig(cluster, config)
     },
+    /**
+     * 设置存档模组配置
+     * @param cluster 存档 id
+     * @param modId 模组 id
+     * @param options 模组配置想
+     */
     setClusterModConfig(cluster: string, modId: string, options: ClusterModConfigItem) {
       const clusterModConfig = this.list.filter(item => item.id === cluster)[0].modConfig
       clusterModConfig[modId] = options
     },
   },
 })
-// async patchApplyConfig() {
-//   const config = useConfigStore()
-//   const res = await sshOperate.serverGetApplyConfig(config.serverExtra.cluster || 1)
-//   const applyConfig = JSON.parse(res)
-//   this.serverList.forEach((id) => {
-//     this._list[id].applyConfig = applyConfig[id]
-//   })
-// },
-// async setModConfig(id: string, applyConfig: ModApplyConfig): Promise<boolean> {
-//   this._list[id].applyConfig = applyConfig
-//   return await this.applyServerModConfig()
-// },
-// async setModEnabledStatus(id: string, enabled: boolean): Promise<boolean> {
-//   const config = this._list[id]
-//   if (!config.applyConfig) {
-//     this.setModConfigDefault(id)
-//     config.applyConfig = this._list[id].applyConfig
-//   }
-//   if (config.applyConfig)
-//     config.applyConfig.enabled = enabled
-
-//   this._list[id] = config
-//   await store.set('mod-list', this._list)
-//   return await this.applyServerModConfig()
-// },
-// setModConfigDefault(id?: string) {
-//   let list = []
-//   id ? list = [id] : list = this.serverList
-//   list.forEach((id) => {
-//     const config = this._list[id]
-//     if (!config?.applyConfig) {
-//       config.applyConfig = {
-//         configuration_options: (config.originConfig || []).reduce((acc, item) => {
-//           acc[item.name] = item.default
-//           return acc
-//         }, {} as Record<string, string | boolean| number>),
-//         enabled: false,
-//       }
-//       this._list[id] = config
-//     }
-//   })
-//   store.set('mod-list', this._list)
-// },
-// async applyServerModConfig(): Promise<boolean> {
-//   const config = `return {\n${this.serverList.map((id) => {
-//     let applyConfig = this._list[id].applyConfig
-//     if (!applyConfig) {
-//       this.setModConfigDefault(id)
-//       applyConfig = this._list[id].applyConfig
-//     }
-//     const options = applyConfig?.configuration_options || {}
-//     return `\t["workshop-${id}"] = {\n\t\tconfiguration_options = {\n${
-//       Object.keys(options).map((key) => {
-//         let value = options[key]
-//         if (typeof (value) !== 'boolean')
-//           value = `"${value}"`
-//         const retain = ['and', 'break', 'do', 'else', 'elseif', 'end', 'false', 'for', 'function', 'if', 'in', 'local', 'nil', 'not', 'or', 'repeat', 'return', 'then', 'true', 'until', 'while', 'goto']
-//         if (key.includes(' ') || retain.includes(key))
-//           key = `["${key}"]`
-//         return `\t\t\t${key || '[""]'} = ${value}`
-//       }).join(',\n')
-//     }\n\t\t},\n\t\tenabled = ${
-//       applyConfig?.enabled || false
-//     }\n\t}`
-//   }).join(',\n')}\n}`
-//   const configStore = useConfigStore()
-//   return await sshOperate.applyServerModConfig(config, configStore.serverExtra.cluster || 1)
-// },

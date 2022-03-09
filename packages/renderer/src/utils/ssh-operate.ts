@@ -28,7 +28,6 @@ export const sshOperate = {
   currentServerInstallProgress: async(): Promise<number> => await invoke('currentServerInstallProgress'),
   currentServerInstallLog: async(): Promise<string> => await invoke('currentServerInstallLog'),
   initServerClient: async(): Promise<boolean> => await invoke('initServerClient'),
-  applyServerModConfig: async(config: string, cluster: number): Promise<boolean> => await invoke('applyServerModConfig', config, cluster),
 
   // #region 服务器模组相关
   /**
@@ -136,12 +135,12 @@ export const sshOperate = {
         await invoke('echo2File', '', '~/.klei/DoNotStarveTogether/mod_config/Master/server.ini')
         await invoke('echo2File', '', '~/.klei/DoNotStarveTogether/mod_config/Caves/server.ini')
       }
-      invoke('exec', 'cd ~/myDSTserver/bin && ./dontstarve_dedicated_server_nullrenderer -cluster "mod_config"', 'update-mod-config')
+      invoke('exec', 'cd ~/myDSTserver/bin && ./dontstarve_dedicated_server_nullrenderer -cluster "mod_config" -only_update_server_mods', 'update-mod-config')
       for (let i = 0; i < 60 * 30; i++) {
         const log = await invoke('queryExecLog', 'update-mod-config')
         if (/Your Server Will Not Start/.test(log))
           break
-        await sleep(2000)
+        await sleep(1000)
       }
       await invoke('execCommand', 'pkill -9 dontstarve')
       return true
