@@ -75,7 +75,7 @@ export const sshOperate = {
    * @returns 存档列表 ['xxxx', 'xxxx']
    */
   getClusterList: async(): Promise<string[]> => {
-    const res = await invoke('getDirectoryList', 'ls ~/.klei/DoNotStarveTogether', false)
+    const res = await invoke('getDirectoryList', '~/.klei/DoNotStarveTogether', false)
     return res.filter((path: string) => path.includes('Cluster_'))
   },
   /**
@@ -116,6 +116,18 @@ export const sshOperate = {
     const path = `~/.klei/DoNotStarveTogether/${cluster}/modoverrides.lua`
     console.log(path)
     return await invoke('echoContent2File', path, config)
+  },
+  async backupCluster(cluster: string, path: string): Promise<boolean> {
+    try {
+      await invoke('execCommand', 'mkdir ~/BackupCluster')
+      await invoke('execCommand', `cd ~/.klei/DoNotStarveTogether && tar -zcvf ./Backup_${cluster}.tar.gz ./${cluster}`)
+      await invoke('execCommand', `mv ~/.klei/DoNotStarveTogether/Backup_${cluster}.tar.gz ~/BackupCluster`)
+      await invoke('downloadFile', `${path}/Backup_${cluster}.tar.gz`, `/root/BackupCluster/Backup_${cluster}.tar.gz`)
+      return true
+    }
+    catch {
+      return false
+    }
   },
   // #endregion
 

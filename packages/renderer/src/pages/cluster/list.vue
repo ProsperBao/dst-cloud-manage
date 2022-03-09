@@ -26,7 +26,7 @@
                 <n-button-group>
                   <n-tooltip placement="bottom" trigger="hover">
                     <template #trigger>
-                      <n-button type="default" size="small" round>
+                      <n-button type="default" size="small" round @click="backupCluster(item.id)">
                         <carbon:data-backup />
                       </n-button>
                     </template>
@@ -74,9 +74,12 @@
 </template>
 
 <script lang="ts" setup>
+import { useMessage } from 'naive-ui'
 import { useClusterStore } from '../../store/cluster'
+import { dialog } from '../../utils/dialog'
 
 const { t } = useI18n()
+const message = useMessage()
 const router = useRouter()
 const clusterStore = useClusterStore()
 
@@ -84,6 +87,20 @@ const toClusterModManage = (cluster: string) => router.push({ path: `/mod/list/$
 
 if (clusterStore.list.length === 0)
   clusterStore.getClusterList()
+
+const backupCluster = async(cluster: string) => {
+  const res = await dialog.showOpenDialog({
+    title: `${t('dialog.backup-cluster')}[${cluster}]`,
+    properties: ['openDirectory', 'createDirectory'],
+  })
+  if (!res.canceled) {
+    if (await clusterStore.backupCluster(cluster, res.filePaths[0]))
+      message.success(t('result.backup-cluster-success'))
+
+    else
+      message.error(t('result.backup-cluster-fail'))
+  }
+}
 </script>
 
 <style>

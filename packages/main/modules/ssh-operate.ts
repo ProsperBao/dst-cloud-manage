@@ -210,6 +210,15 @@ class SSHOperate {
   async runLua(luaScript: string): Promise<string> {
     return lua.runLua(luaScript)
   }
+
+  downloadFile(localPath: string, remotePath: string): Promise<boolean> {
+    const connection = this.getConnection()
+    return new Promise((resolve) => {
+      connection.getFile(localPath, remotePath)
+        .then(() => resolve(true))
+        .catch(() => resolve(false))
+    })
+  }
 }
 
 const ssh = new SSHOperate()

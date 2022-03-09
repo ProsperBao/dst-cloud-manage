@@ -81,5 +81,8 @@ export const useClusterStore = defineStore('cluster', {
       const clusterModConfig = this.list.filter(item => item.id === cluster)[0].modConfig
       clusterModConfig[modId] = options
     },
+    async backupCluster(cluster: string, path: string) {
+      return await sshOperate.backupCluster(cluster, path)
+    },
   },
 })
