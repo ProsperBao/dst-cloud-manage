@@ -127,14 +127,12 @@ class SSHOperate {
     return new Promise((resolve) => {
       connection.exec('~/myDSTserver/bin/dontstarve_dedicated_server_nullrenderer', [], {
         onStdout: (chunk) => {
-          console.log(chunk.toString('utf8'))
           if (chunk.toString('utf8').includes('Your Server Will Not Start')) {
             connection.execCommand('pkill -9 dontstarve')
             resolve(true)
           }
         },
-        onStderr: (chunk) => {
-          console.log(chunk.toString('utf8'))
+        onStderr: () => {
           resolve(false)
         },
       })
@@ -208,7 +206,15 @@ class SSHOperate {
   }
 
   async runLua(luaScript: string): Promise<string> {
-    return lua.runLua(luaScript)
+    try {
+      luaScript = luaScript.replace(/󰀀|󰀉|󰀌|\\󰀧/g, '')
+      console.log(luaScript)
+      return lua.runLua(luaScript)
+    }
+    catch {
+      console.log(luaScript)
+      return ''
+    }
   }
 
   downloadFile(localPath: string, remotePath: string): Promise<boolean> {

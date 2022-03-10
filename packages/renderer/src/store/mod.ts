@@ -39,8 +39,6 @@ export const useModStore = defineStore('mod', {
       this.loading.push(id)
 
       const mod: Mod = JSON.parse(await localCache.getSteamMod(id, steamLanguage))
-      mod.originConfig = await this.patchModConfig(id)
-      console.log(mod.id, mod.title, mod.originConfig)
 
       this.loading = this.loading.filter(i => i !== id)
       return mod
@@ -65,6 +63,7 @@ export const useModStore = defineStore('mod', {
 
       if (save) {
         this._list[id] = res
+        this._list[id].originConfig = await this.patchModConfig(id)
         await store.set('mod-list', this._list)
       }
       return res
@@ -87,6 +86,7 @@ export const useModStore = defineStore('mod', {
         this.$patch({ _list: { ...tempCache } })
         store.set('mod-list', this._list)
       }
+      this.patchAllModConfig()
     },
     /**
      * Force an update to the cache
@@ -95,11 +95,13 @@ export const useModStore = defineStore('mod', {
     async forceUpdate(id?: string) {
       if (id) {
         this._list[id].lastDetectionTime = '0'
+        this._list[id].originConfig = undefined
         this._list[id] = await this.detectMod(id)
       }
       else {
         this.serverList.forEach((id) => {
           this._list[id].lastDetectionTime = '0'
+          this._list[id].originConfig = undefined
         })
         await this.detectModList()
       }
@@ -136,7 +138,6 @@ export const useModStore = defineStore('mod', {
           .map(config => `${config.label}↔️${config.hover || '❌'}↔️${config.options.map(option => option.hover).join('↕️')}`)
           .join('↩️\n')
           .replace(/\n/g, '')
-        console.log(translateContent)
         const res = (await localCache.translate(translateContent, false)).split('↩️')
         mod.originConfig = mod.originConfig.map((config, idx) => {
           const [label, hover, options] = res[idx].split('↔️')
@@ -168,6 +169,12 @@ export const useModStore = defineStore('mod', {
         return []
       }
     },
+    async patchAllModConfig() {
+      for (const id of this.serverList)
+        this._list[id].originConfig = await this.patchModConfig(id)
+      store.set('mod-list', this._list)
+    },
+
     // 初始化数据
     async initState() {
       this.serverList = await sshOperate.getSetupMods()

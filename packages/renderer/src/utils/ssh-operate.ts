@@ -42,8 +42,10 @@ export const sshOperate = {
       path = `~/myDSTserver/mods/workshop-${id}/modinfo.lua`
       res = await invoke('gatFileContent', path)
     }
+    if (!res.includes('configuration_options')) return []
     try {
-      return JSON.parse(await invoke('runLua', res))
+      const luaResult = JSON.parse(await invoke('runLua', `function mod${id}()\n${res}\nreturn json.stringify(configuration_options)\nend\nreturn mod${id}()`))
+      return luaResult
     }
     catch {
       return []
@@ -106,7 +108,7 @@ export const sshOperate = {
     const path = `~/.klei/DoNotStarveTogether/${cluster}/modoverrides.lua`
     const res = await invoke('gatFileContent', path) || 'return {}'
     try {
-      return JSON.parse(await invoke('runLua', `local configuration_options = ${res.substring(7).replace(/workshop-/g, '')}`))
+      return JSON.parse(await invoke('runLua', `function modConfig()\nreturn json.stringify(${res.substring(7).replace(/workshop-/g, '')})\nend\nreturn modConfig()`))
     }
     catch {
       return {}
@@ -114,7 +116,6 @@ export const sshOperate = {
   },
   async applyClusterModConfig(cluster: string, config: string): Promise<boolean> {
     const path = `~/.klei/DoNotStarveTogether/${cluster}/modoverrides.lua`
-    console.log(path)
     return await invoke('echoContent2File', path, config)
   },
   async backupCluster(cluster: string, path: string): Promise<boolean> {
