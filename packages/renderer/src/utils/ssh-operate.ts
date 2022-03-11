@@ -28,16 +28,15 @@ export const sshOperate = {
    * @returns 模组配置如果没有则为 {}
    */
   async getModConfig(id: string): Promise<ModConfig[]> {
-    let path = `~/myDSTserver/ugc_mods/mod_config/Master/content/322330/${id}/modinfo.lua`
+    let path = `steamcmd/~/myDSTserver/ugc_mods/mod_config/Master/content/322330/${id}/modinfo.lua`
     let res = await invoke('gatFileContent', path)
     if ((res ?? '') === '') {
-      path = `~/myDSTserver/mods/workshop-${id}/modinfo.lua`
+      path = `steamcmd/~/myDSTserver/mods/workshop-${id}/modinfo.lua`
       res = await invoke('gatFileContent', path)
     }
     if (!res.includes('configuration_options')) return []
     try {
-      const luaResult = JSON.parse(await invoke('runLua', `function mod${id}()\n${res}\nreturn json.stringify(configuration_options)\nend\nreturn mod${id}()`))
-      return luaResult
+      return JSON.parse(await invoke('runLua', `function mod${id}()\n${res}\nreturn json.stringify(configuration_options)\nend\nreturn mod${id}()`))
     }
     catch {
       return []
@@ -48,7 +47,7 @@ export const sshOperate = {
    * @returns 服务器订阅模组
    */
   async getSetupMods(): Promise<string[]> {
-    const path = '~/myDSTserver/mods/dedicated_server_mods_setup.lua'
+    const path = 'steamcmd/~/myDSTserver/mods/dedicated_server_mods_setup.lua'
     const res = await invoke('gatFileContent', path)
     return res.split('\r\n').filter((mod: string) => !mod.includes('--') && mod.includes('ServerModSetup')).map((mod: string) => mod.split('\"')[1])
   },
@@ -57,7 +56,7 @@ export const sshOperate = {
    * @returns 服务器订阅模组集合
    */
   async getSetupModCollection(): Promise<string[]> {
-    const path = '~/myDSTserver/mods/dedicated_server_mods_setup.lua'
+    const path = 'steamcmd/~/myDSTserver/mods/dedicated_server_mods_setup.lua'
     const res = await invoke('gatFileContent', path)
     return res.split('\r\n').filter((mod: string) => !mod.includes('--') && mod.includes('ServerModCollectionSetup')).map((mod: string) => mod.split('\"')[1])
   },
@@ -142,7 +141,7 @@ export const sshOperate = {
         await invoke('echo2File', '', '~/.klei/DoNotStarveTogether/mod_config/Master/server.ini')
         await invoke('echo2File', '', '~/.klei/DoNotStarveTogether/mod_config/Caves/server.ini')
       }
-      invoke('exec', 'cd ~/myDSTserver/bin && ./dontstarve_dedicated_server_nullrenderer -cluster "mod_config"', 'update-mod-config')
+      invoke('exec', 'cd steamcmd/~/myDSTserver/bin && ./dontstarve_dedicated_server_nullrenderer -cluster "mod_config"', 'update-mod-config')
       for (let i = 0; i < 60 * 30; i++) {
         const log = await invoke('queryExecLog', 'update-mod-config')
         if (/Your Server Will Not Start/.test(log))
@@ -178,7 +177,7 @@ export const sshOperate = {
       // 解压 SteamCMD
       case QuicklyInstallStep.INSTALL_STEAM_CMD: return await invoke('execCommand', 'tar -xvzf ~/steamcmd/steamcmd_linux.tar.gz -C ~/steamcmd')
       // 安装 DST 服务器，时间较久需要分步返回数据，需要轮训日志判断结果
-      case QuicklyInstallStep.DOWNLOAD_DST_SERVER: return invoke('exec', 'bash ~/steamcmd/steamcmd.sh +force_install_dir ~/myDSTserver +login anonymous +app_update 343050 validate +quit', 'download-dst-server')
+      case QuicklyInstallStep.DOWNLOAD_DST_SERVER: return invoke('exec', 'bash ~/steamcmd/steamcmd.sh +force_install_dir steamcmd/~/myDSTserver +login anonymous +app_update 343050 validate +quit', 'download-dst-server')
       default: return false
     }
   },

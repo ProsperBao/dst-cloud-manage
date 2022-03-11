@@ -103,7 +103,6 @@ class SSHOperate {
   async runLua(luaScript: string): Promise<string> {
     try {
       luaScript = luaScript.replace(/󰀀|󰀉|󰀌|\\󰀧/g, '')
-      console.log(luaScript)
       return lua.runLua(luaScript)
     }
     catch {
