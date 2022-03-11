@@ -20,6 +20,7 @@ button:
   back: 返回
   cluster-backup: 存档备份
   cluster-delete: 删除存档
+  confirm: 确认
   force-refresh: 强制刷新
   manage-mod: 管理模组
   mod-config: mod配置
@@ -43,14 +44,15 @@ dialog:
   backup-cluster: 备份存档
 install:
   download-server-client: 正在安装饥荒联机版服务器套件
-  download-steam-cmd: 正在下载 SteamCMD
+  download-steamcmd: 正在下载 Steam 命令行
   fail: 部署失败
-  install-depend: 正在安装系统依赖
-  install-steam-cmd: 正在安装 SteamCMD
+  init-cluster: 正在初始化存档
+  install-depend: 正在安装服务器依赖
+  install-steamcmd: 正在安装 Steam 命令行
   pending: 部署中
   quickly-install: 一键部署中
   success: 部署成功
-  update-system-origin: 正在更新系统安装工具镜像源
+  update-package: 正在更新系统包管理
 menu:
   config: 配置
   home: 首页
@@ -67,14 +69,21 @@ other:
 result:
   backup-cluster-fail: 存档备份失败
   backup-cluster-success: 存档备份成功
+  download-steamcmd-fail: 下载 Steam 命令行失败
   empty-cluster: 没有任何存档
   empty-cluster-description: 暂无描述
   empty-cluster-name: 暂无配置
   empty-mod: 服务器暂无安装mod
+  init-cluster-fail: 初始化存档失败
+  install-depend-fail: 服务器依赖包安装失败
+  install-server-fail: 饥荒联机版服务套件安装失败
+  install-steamcmd-fail: 安装 Steam 命令行失败
   mod-list-locked: 暂无信息
   mod-list-locked-desc: 请先配置好服务器信息，并连接成功后再试
+  quickly-install-success: 一键部署成功
   update-mod-failed: 更新模组失败
   update-mod-success: 更新模组成功
+  update-package-fail: 系统包管理升级失败
 save:
   connect-fail: 请先点击连接测试按钮，待成功之后即可保存
   success: 保存成功

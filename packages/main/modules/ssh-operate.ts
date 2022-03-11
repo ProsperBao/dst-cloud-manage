@@ -1,6 +1,5 @@
 import type { Config, NodeSSH as NodeSSHType } from 'node-ssh'
 import { ipcMain } from 'electron'
-import { last } from 'lodash'
 import lua from '../../../utils/lua'
 
 const { NodeSSH } = require('node-ssh')
@@ -33,110 +32,6 @@ class SSHOperate {
   static async testConnect(config: Config): Promise<void> {
     const tempConnection = new NodeSSH() as NodeSSHType
     await tempConnection.connect(config)
-  }
-
-  async updateSystemOrigin(): Promise<string> {
-    const connection = this.getConnection()
-    const res = await connection.execCommand('apt-get update')
-    this.execLog = res.stdout || res.stderr
-    return this.execLog
-  }
-
-  async installDepend(): Promise<string> {
-    const connection = this.getConnection()
-    const res = await connection.execCommand('apt-get install screen libstdc++6 libgcc1 libcurl4-gnutls-dev libstdc++6:i386 libgcc1:i386 libcurl4-gnutls-dev:i386 -y')
-    this.execLog += res.stdout
-    return this.execLog
-  }
-
-  async downloadSteamCMD(): Promise<string> {
-    const connection = this.getConnection()
-    let res = await connection.execCommand('mkdir ~/steamcmd')
-    this.execLog += res.stdout
-    res = await connection.execCommand('wget -P ~/steamcmd https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz')
-    this.execLog += res.stdout
-    return this.execLog
-  }
-
-  async installSteamCMD(): Promise<string> {
-    const connection = this.getConnection()
-    const res = await connection.execCommand('tar -xvzf ~/steamcmd/steamcmd_linux.tar.gz -C ~/steamcmd')
-    this.execLog += res.stdout
-    return this.execLog
-  }
-
-  async installServerClient(): Promise<boolean> {
-    const connection = this.getConnection()
-    this.quicklyStatus = 'pending'
-    try {
-      await connection.exec('bash ~/steamcmd/steamcmd.sh +force_install_dir ~/myDSTserver +login anonymous +app_update 343050 validate +quit', [], {
-        onStdout: (chunk) => {
-          this.execLog += chunk.toString('utf8')
-        },
-        onStderr: (chunk) => {
-          this.execLog += chunk.toString('utf8')
-        },
-      })
-    }
-    catch {
-      if (this.execLog && this.execLog.includes('fully installed')) {
-        this.quicklyStatus = 'success'
-        return true
-      }
-      else {
-        this.quicklyStatus = 'fail'
-      }
-    }
-    return false
-  }
-
-  async currentServerInstallProgress(): Promise<number> {
-    const log = this.execLog?.split('\n')
-    let end = last(log) || ''
-    if (!end.includes('progress')) {
-      for (let i = log.length - 1; i >= log.length - 3; i--) {
-        if (log[i].includes('progress')) {
-          end = log[i]
-          break
-        }
-      }
-    }
-    if (end.includes('fully installed') || ['success', 'fail'].includes(this.quicklyStatus)) {
-      const connection = this.getConnection()
-      await connection.execCommand('pkill -９ steam')
-      return 100
-    }
-    else if (end.includes('progress') && this.quicklyStatus === 'pending') {
-      const progress = end.match(/:(.*?)\(/)
-      return parseInt(`${progress?.[1] || ''}`.trim())
-    }
-    else if (this.quicklyStatus === 'pending') {
-      return 0
-    }
-    else {
-      return -1
-    }
-  }
-
-  currentServerInstallLog() {
-    return this.execLog
-  }
-
-  async initServerClient(): Promise<boolean> {
-    const connection = this.getConnection()
-    return new Promise((resolve) => {
-      connection.exec('~/myDSTserver/bin/dontstarve_dedicated_server_nullrenderer', [], {
-        onStdout: (chunk) => {
-          if (chunk.toString('utf8').includes('Your Server Will Not Start')) {
-            connection.execCommand('pkill -9 dontstarve')
-            resolve(true)
-          }
-        },
-        onStderr: () => {
-          resolve(false)
-        },
-      })
-    })
   }
 
   // bash cmd
@@ -195,8 +90,8 @@ class SSHOperate {
       onStdout: (chunk) => {
         this.cmdLog[flag] += chunk.toString('utf8')
       },
-      onStderr: (chunk) => {
-        this.cmdLog[flag] += chunk.toString('utf8')
+      onStderr: () => {
+        this.cmdLog[flag] = 'fail'
       },
     })
   }

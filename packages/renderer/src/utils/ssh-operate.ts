@@ -1,5 +1,7 @@
 import type { ModConfig } from 'dst'
 import type { Config } from 'node-ssh'
+import { last } from 'lodash'
+import { QuicklyInstallStep } from '../types/dst'
 import type { IniConfig } from '../../../../utils/ini'
 import ini from '../../../../utils/ini'
 import { useConfigStore } from '../store/config'
@@ -19,16 +21,6 @@ export const sshOperate = {
     }
   },
   testConnect: async(config: Config): Promise<void> => await invoke('testConnect', config),
-
-  updateSystemOrigin: async(): Promise<string> => await invoke('updateSystemOrigin'),
-  installDepend: async(): Promise<string> => await invoke('installDepend'),
-  downloadSteamCMD: async(): Promise<string> => await invoke('downloadSteamCMD'),
-  installSteamCMD: async(): Promise<string> => await invoke('installSteamCMD'),
-  installServerClient: async(): Promise<boolean> => await invoke('installServerClient'),
-  currentServerInstallProgress: async(): Promise<number> => await invoke('currentServerInstallProgress'),
-  currentServerInstallLog: async(): Promise<string> => await invoke('currentServerInstallLog'),
-  initServerClient: async(): Promise<boolean> => await invoke('initServerClient'),
-
   // #region 服务器模组相关
   /**
    * 获取服务器指定模组的配置文件选项
@@ -141,6 +133,8 @@ export const sshOperate = {
     try {
       const clusters = await invoke('getDirectoryList', '~/.klei/DoNotStarveTogether', false)
       if (!clusters.includes('mod_config')) {
+        await invoke('createDirDirectory', '~/.klei')
+        await invoke('createDirDirectory', '~/.klei/DoNotStarveTogether')
         await invoke('createDirDirectory', '~/.klei/DoNotStarveTogether/mod_config')
         await invoke('createDirDirectory', '~/.klei/DoNotStarveTogether/mod_config/Master')
         await invoke('createDirDirectory', '~/.klei/DoNotStarveTogether/mod_config/Caves')
@@ -148,11 +142,12 @@ export const sshOperate = {
         await invoke('echo2File', '', '~/.klei/DoNotStarveTogether/mod_config/Master/server.ini')
         await invoke('echo2File', '', '~/.klei/DoNotStarveTogether/mod_config/Caves/server.ini')
       }
-      invoke('exec', 'cd ~/myDSTserver/bin && ./dontstarve_dedicated_server_nullrenderer -cluster "mod_config" -only_update_server_mods', 'update-mod-config')
+      invoke('exec', 'cd ~/myDSTserver/bin && ./dontstarve_dedicated_server_nullrenderer -cluster "mod_config"', 'update-mod-config')
       for (let i = 0; i < 60 * 30; i++) {
         const log = await invoke('queryExecLog', 'update-mod-config')
         if (/Your Server Will Not Start/.test(log))
           break
+        if (log === 'fail') return false
         await sleep(1000)
       }
       await invoke('execCommand', 'pkill -9 dontstarve')
@@ -162,6 +157,70 @@ export const sshOperate = {
       return false
     }
   },
+  /**
+   * 执行一键安装步骤
+   * @param step 步骤
+   * @returns 是否执行成功
+   */
+  async quicklyInstallStep(step: QuicklyInstallStep): Promise<boolean> {
+    switch (step) {
+      // 升级系统包管理工具/更新源
+      case QuicklyInstallStep.UPDATE_PACKAGE: return await invoke('execCommand', 'apt-get update')
+      // 安装必要的依赖组件
+      case QuicklyInstallStep.INSTALL_DEPEND: return await invoke('execCommand', 'apt-get install screen libstdc++6 libgcc1 libstdc++6:i386 libgcc1:i386 libcurl4-gnutls-dev:i386 -y')
+      // 下载 SteamCMD
+      case QuicklyInstallStep.DOWNLOAD_STEAM_CMD: {
+        await invoke('execCommand', 'mkdir ~/steamcmd')
+        await invoke('execCommand', 'rm -rf steamcmd_linux.tar.gz')
+        await invoke('execCommand', 'wget -P ~/steamcmd https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz')
+        return true
+      }
+      // 解压 SteamCMD
+      case QuicklyInstallStep.INSTALL_STEAM_CMD: return await invoke('execCommand', 'tar -xvzf ~/steamcmd/steamcmd_linux.tar.gz -C ~/steamcmd')
+      // 安装 DST 服务器，时间较久需要分步返回数据，需要轮训日志判断结果
+      case QuicklyInstallStep.DOWNLOAD_DST_SERVER: return invoke('exec', 'bash ~/steamcmd/steamcmd.sh +force_install_dir ~/myDSTserver +login anonymous +app_update 343050 validate +quit', 'download-dst-server')
+      default: return false
+    }
+  },
+  /**
+   * 获取 DST Server 安装进度
+   * @returns 安装进度
+   */
+  async getDstInstallProgress(): Promise<number> {
+    const resultLog: string = await invoke('queryExecLog', 'download-dst-server') || ''
+    // 失败直接返回 -1
+    if (resultLog === 'fail') return -1
 
+    const log = resultLog.split('\n')
+
+    // 判断安装是否成功
+    if (resultLog.includes('fully installed')) return 100
+
+    let end = last(log) || ''
+    // 判断最后一项有没有结果
+    if (!end.includes('progress')) {
+      for (let i = log.length - 1; i >= log.length - 3; i--) {
+        if (log?.[i]?.includes('progress')) {
+          end = log[i]
+          break
+        }
+      }
+    }
+    // 获取安装进度
+    if (end.includes('progress')) {
+      const progress = end.match(/:(.*?)\(/)
+      return parseInt(`${progress?.[1] || ''}`.trim())
+    }
+
+    return 0
+  },
+  /**
+   * 获取执行日志
+   * @param flag 日志标识
+   * @returns 执行日志
+   */
+  async queryExecLog(flag: string): Promise<string> {
+    return await invoke('queryExecLog', flag)
+  },
   // #endregion
 }

@@ -39,7 +39,7 @@
 
 <script lang="ts" setup>
 import { useMessage } from 'naive-ui'
-import type { ServerExtra } from '../../store/config'
+import type { ServerExtra } from 'dst'
 import { useConfigStore } from '../../store/config'
 
 const { t } = useI18n()
@@ -49,7 +49,7 @@ const message = useMessage()
 const formRef = ref<any>(null)
 
 const model = ref<ServerExtra>({
-  setup: 'steamcmd/~/myDSTserver',
+  setup: '~/myDSTserver',
   ...toRaw(configStore.serverExtra),
 })
 const rules = ref({

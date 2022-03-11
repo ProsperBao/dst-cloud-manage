@@ -18,7 +18,7 @@
       <n-list v-if="modStore.list.length > 0" bordered>
         <n-list-item v-for="item in modStore.list" :key="item.id">
           <n-spin :show="modStore.loading.includes(item.id)">
-            <ModItem :mod="item" :readonly="true" />
+            <!-- <ModItem :mod="item" :readonly="true" /> -->
           </n-spin>
         </n-list-item>
       </n-list>
@@ -29,24 +29,12 @@
 
 <script lang="ts" setup>
 import { useModStore } from '../../store/mod'
-import { sshOperate } from '../../utils/ssh-operate'
 import ModItem from './components/ModItem.vue'
 
 const { t } = useI18n()
 const modStore = useModStore()
 
 const forceRefresh = () => modStore.forceUpdate()
-
-// ;(async() => {
-//   try {
-//     modStore.initState(await sshOperate.getServerSetupMods('steamcmd/~/myDSTserver'))
-//     modStore.setLockModFunc(false)
-//   }
-//   catch {
-//     modStore.setLockModFunc(true)
-//   }
-//   modStore.patchApplyConfig()
-// })()
 </script>
 
 <style>
