@@ -1,5 +1,6 @@
 import type { ClusterItem, ClusterModConfigItem, ClusterModConfigOptions, ClusterState } from 'dst'
 import { defineStore } from 'pinia'
+import { defaultClusterCavesServer, defaultClusterConfig, defaultClusterMasterServer } from '../utils/default-config'
 import { sshOperate } from '../utils/ssh-operate'
 import { useModStore } from './mod'
 
@@ -81,8 +82,45 @@ export const useClusterStore = defineStore('cluster', {
       const clusterModConfig = this.list.filter(item => item.id === cluster)[0].modConfig
       clusterModConfig[modId] = options
     },
+    /**
+     * 备份存档
+     * @param cluster 存档 id
+     * @param path 保存至本机路径
+     */
     async backupCluster(cluster: string, path: string) {
       return await sshOperate.backupCluster(cluster, path)
+    },
+    /**
+     * 创建一个新的默认存档
+     */
+    async createCluster() {
+      const max = this.list.filter(i => i.id.includes('Cluster_')).map(i => i.id.replace('Cluster_', '')).sort((a, b) => +b - +a)[0]
+      const cluster = `Cluster_${+max + 1}`
+      try {
+        await sshOperate.createCluster(cluster, {
+          cluster: defaultClusterConfig,
+          master: defaultClusterMasterServer,
+          caves: defaultClusterCavesServer,
+        })
+        await this.getClusterList()
+        return true
+      }
+      catch {
+        return false
+      }
+    },
+    /**
+     * 删除存档
+     */
+    async deleteCluster(cluster: string) {
+      try {
+        await sshOperate.deleteCluster(cluster)
+        await this.getClusterList()
+        return true
+      }
+      catch {
+        return false
+      }
     },
   },
 })

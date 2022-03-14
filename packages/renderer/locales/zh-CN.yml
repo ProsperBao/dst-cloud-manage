@@ -18,6 +18,7 @@ breadcrumb:
   translate: 翻译
 button:
   back: 返回
+  cancel: 取消
   cluster-backup: 存档备份
   cluster-delete: 删除存档
   confirm: 确认
@@ -42,6 +43,8 @@ describe:
   size: 大小
 dialog:
   backup-cluster: 备份存档
+  confirm-delete: 删除存档
+  confirm-delete-text: 删除存档之后不可恢复，使用前记得先备份存档，继续删除吗？
 install:
   download-server-client: 正在安装饥荒联机版服务器套件
   download-steamcmd: 正在下载 Steam 命令行
@@ -69,6 +72,10 @@ other:
 result:
   backup-cluster-fail: 存档备份失败
   backup-cluster-success: 存档备份成功
+  create-cluster-fail: 创建存档失败
+  create-cluster-success: 创建存档成功
+  delete-cluster: 删除存档成功，如需查看回收备份请检查服务器的 ~/BackupCluster
+  delete-cluster-fail: 删除存档失败
   download-steamcmd-fail: 下载 Steam 命令行失败
   empty-cluster: 没有任何存档
   empty-cluster-description: 暂无描述

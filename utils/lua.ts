@@ -133,11 +133,6 @@ export default {
     `
   },
   runLua(luaScript: string) {
-    console.log(`
-    ${this.jsonHandle()}
-    local locale = "en"
-    ${luaScript}
-  `)
     return fengari.load(`
       ${this.jsonHandle()}
       local locale = "en"

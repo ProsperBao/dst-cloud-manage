@@ -1,4 +1,4 @@
-export type IniConfig = Record<string, Record<string, string>>
+export type IniConfig = Record<string, Record<string, string|boolean|number>>
 
 export default {
   parse: (data: string): IniConfig => {

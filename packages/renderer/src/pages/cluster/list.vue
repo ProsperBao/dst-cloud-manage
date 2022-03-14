@@ -42,7 +42,7 @@
                   </n-tooltip>
                   <n-tooltip placement="bottom" trigger="hover">
                     <template #trigger>
-                      <n-button type="default" size="small" round>
+                      <n-button type="default" size="small" round @click="deleteCluster(item.id)">
                         <carbon:delete />
                       </n-button>
                     </template>
@@ -68,18 +68,32 @@
           </n-list-item>
         </template>
       </n-list>
+      <n-button class="create-cluster" :loading="createLoading" @click="createCluster">
+        添加一个新的默认存档
+      </n-button>
       <n-empty v-if="clusterStore.list.length === 0" size="huge" :description="t('result.empty-cluster')" />
     </LockFunc>
   </div>
+  <n-modal
+    v-model:show="deleteConfirmShow"
+    preset="dialog"
+    :loading="deleteLoading"
+    :title="t('dialog.confirm-delete')"
+    :content="t('dialog.confirm-delete-text')"
+    :positive-text="t('button.cancel')"
+    :negative-text="t('button.confirm')"
+    @positive-click="deleteCluster"
+  />
 </template>
 
 <script lang="ts" setup>
-import { useMessage } from 'naive-ui'
+import { useDialog, useMessage } from 'naive-ui'
 import { useClusterStore } from '../../store/cluster'
 import { dialog } from '../../utils/dialog'
 
 const { t } = useI18n()
 const message = useMessage()
+const nDialog = useDialog()
 const router = useRouter()
 const clusterStore = useClusterStore()
 
@@ -101,6 +115,37 @@ const backupCluster = async(cluster: string) => {
       message.error(t('result.backup-cluster-fail'))
   }
 }
+
+const createLoading = ref(false)
+const createCluster = async() => {
+  createLoading.value = true
+  const res = await clusterStore.createCluster()
+  if (res)
+    message.success(t('result.create-cluster-success'))
+  else
+    message.error(t('result.create-cluster-fail'))
+  createLoading.value = false
+}
+
+const deleteLoading = ref(false)
+const deleteConfirmShow = ref(false)
+const deleteCluster = async(cluster: string) => {
+  const d = nDialog.success({
+    title: t('dialog.confirm-delete'),
+    content: t('dialog.confirm-delete-text'),
+    positiveText: t('button.confirm'),
+    negativeText: t('button.cancel'),
+    onPositiveClick: async() => {
+      d.loading = true
+      const res = await clusterStore.deleteCluster(cluster)
+      if (res)
+        message.success(t('result.delete-cluster'))
+      else
+        message.error(t('result.delete-cluster-fail'))
+    },
+  })
+}
+
 </script>
 
 <style>
@@ -113,5 +158,8 @@ const backupCluster = async(cluster: string) => {
 }
 .n-back-top {
   z-index: 100;
+}
+.create-cluster {
+  width: 100%;
 }
 </style>

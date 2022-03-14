@@ -1,4 +1,4 @@
-import type { ModConfig } from 'dst'
+import type { ClusterCreateConfig, ModConfig } from 'dst'
 import type { Config } from 'node-ssh'
 import { last } from 'lodash'
 import { QuicklyInstallStep } from '../types/dst'
@@ -69,7 +69,7 @@ export const sshOperate = {
    */
   getClusterList: async(): Promise<string[]> => {
     const res = await invoke('getDirectoryList', '~/.klei/DoNotStarveTogether', false)
-    return res.filter((path: string) => path.includes('Cluster_'))
+    return res.filter((path: string) => !path.includes('mod_config') && !path.includes('.'))
   },
   /**
    * 获取存档相关扩展配置
@@ -110,11 +110,35 @@ export const sshOperate = {
     return await invoke('echoContent2File', path, config)
   },
   async backupCluster(cluster: string, path: string): Promise<boolean> {
+    await invoke('execCommand', 'mkdir ~/BackupCluster')
     try {
-      await invoke('execCommand', 'mkdir ~/BackupCluster')
       await invoke('execCommand', `cd ~/.klei/DoNotStarveTogether && tar -zcvf ./Backup_${cluster}.tar.gz ./${cluster}`)
       await invoke('execCommand', `mv ~/.klei/DoNotStarveTogether/Backup_${cluster}.tar.gz ~/BackupCluster`)
       await invoke('downloadFile', `${path}/Backup_${cluster}.tar.gz`, `/root/BackupCluster/Backup_${cluster}.tar.gz`)
+      return true
+    }
+    catch {
+      return false
+    }
+  },
+  async createCluster(cluster: string, config: ClusterCreateConfig): Promise<void> {
+    await invoke('createDirDirectory', '~/.klei')
+    await invoke('createDirDirectory', '~/.klei/DoNotStarveTogether')
+    await invoke('createDirDirectory', `~/.klei/DoNotStarveTogether/${cluster}`)
+    await invoke('createDirDirectory', `~/.klei/DoNotStarveTogether/${cluster}/Master`)
+    await invoke('createDirDirectory', `~/.klei/DoNotStarveTogether/${cluster}/Caves`)
+    await invoke('echo2File', ini.stringify(config.cluster), `~/.klei/DoNotStarveTogether/${cluster}/cluster.ini`)
+    await invoke('echo2File', ini.stringify(config.master), `~/.klei/DoNotStarveTogether/${cluster}/Master/server.ini`)
+    await invoke('echo2File', ini.stringify(config.caves), `~/.klei/DoNotStarveTogether/${cluster}/Caves/server.ini`)
+  },
+  async deleteCluster(cluster: string): Promise<boolean> {
+    const time = new Date().getTime()
+    // 预先备份，避免小傻瓜直接删了
+    await invoke('execCommand', 'mkdir ~/BackupCluster')
+    try {
+      await invoke('execCommand', `cd ~/.klei/DoNotStarveTogether && tar -zcvf ./Backup_${cluster}_${time}.tar.gz ./${cluster}`)
+      await invoke('execCommand', `mv ~/.klei/DoNotStarveTogether/Backup_${cluster}_${time}.tar.gz ~/BackupCluster`)
+      await invoke('execCommand', `rm -rf ~/.klei/DoNotStarveTogether/${cluster}`)
       return true
     }
     catch {

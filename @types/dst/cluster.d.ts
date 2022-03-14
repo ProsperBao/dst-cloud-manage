@@ -10,10 +10,11 @@ export interface ClusterModConfigItem {
 }
 export type ClusterModConfig = Record<string, ClusterModConfigItem>
 
+export type ClusterConfig = Record<string, Record<string, string|boolean|number>>
 // 基础存档属性
 export interface BaseClusterItem{
   id: string // 存档全名
-  config?: Record<string, Record<string, string>> // 存档配置
+  config?: ClusterConfig // 存档配置
 }
 
 // 存档扩展属性
@@ -22,3 +23,5 @@ export interface ClusterItem extends BaseClusterItem{
   adminList: string[] // 管理员列表
   modConfig: ClusterModConfig // 模组配置
 }
+
+export type ClusterCreateConfig = Record<string, ClusterConfig>
