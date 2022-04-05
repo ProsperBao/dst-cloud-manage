@@ -1,4 +1,5 @@
-import type { ClusterConfig } from 'dst'
+import type { ClusterConfig, ClusterConfigOptions } from 'dst'
+import { ClusterOptionsType } from '../types/dst'
 
 export const defaultClusterConfig: ClusterConfig = {
   GAMEPLAY: {
@@ -49,5 +50,70 @@ export const defaultClusterCavesServer: ClusterConfig = {
   STEAM: {
     master_server_port: 27017,
     authentication_port: 8767,
+  },
+}
+
+export const clusterConfigOptions: ClusterConfigOptions = {
+  GAMEPLAY: {
+    game_mode: {
+      type: ClusterOptionsType.SELECT,
+      options: [
+        'survival',
+        'endless',
+        'wilderness',
+      ],
+    },
+    pvp: {
+      type: ClusterOptionsType.SWITCH,
+    },
+    pause_when_empty: {
+      type: ClusterOptionsType.SWITCH,
+    },
+  },
+  NETWORK: {
+    cluster_intention: {
+      type: ClusterOptionsType.SELECT,
+      options: [
+        'cooperative',
+        'competitive',
+        'social',
+        'madness',
+      ],
+    },
+    lan_only_cluster: {
+      type: ClusterOptionsType.SWITCH,
+    },
+    offline_cluster: {
+      type: ClusterOptionsType.SWITCH,
+    },
+  },
+  MISC: {
+    console_enabled: {
+      type: ClusterOptionsType.SWITCH,
+    },
+  },
+  SHARD: {
+    shard_enabled: {
+      type: ClusterOptionsType.SWITCH,
+    },
+  },
+}
+export const clusterMasterServerOptions: ClusterConfigOptions = {
+  SHARD: {
+    is_master: {
+      type: ClusterOptionsType.SWITCH,
+    },
+  },
+  ACCOUNT: {
+    encode_user_path: {
+      type: ClusterOptionsType.SWITCH,
+    },
+  },
+}
+export const clusterCavesServerOptions: ClusterConfigOptions = {
+  SHARD: {
+    is_master: {
+      type: ClusterOptionsType.SWITCH,
+    },
   },
 }

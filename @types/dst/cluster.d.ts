@@ -25,3 +25,10 @@ export interface ClusterItem extends BaseClusterItem{
 }
 
 export type ClusterCreateConfig = Record<string, ClusterConfig>
+
+export interface ClusterConfigOptionsItem {
+  type: number
+  options?: string[]
+}
+export type ExClusterConfig = Record<string, ClusterConfigOptionsItem>
+export type ClusterConfigOptions = Record<string, ExClusterConfig>

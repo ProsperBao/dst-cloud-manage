@@ -5,6 +5,7 @@ import { store } from '../utils/electron-store'
 import { localCache } from '../utils/local-cache'
 import { sshOperate } from '../utils/ssh-operate'
 import { sleep } from '../utils/time'
+import { useClusterStore } from './cluster'
 
 const MAX_DETECTION_NUM = 3
 
@@ -174,7 +175,6 @@ export const useModStore = defineStore('mod', {
         this._list[id].originConfig = await this.patchModConfig(id)
       store.set('mod-list', this._list)
     },
-
     // 初始化数据
     async initState() {
       this.serverList = await sshOperate.getSetupMods()
@@ -196,8 +196,16 @@ export const useModStore = defineStore('mod', {
       this.lockModFunc = lockModFunc
     },
     // 专门用来获取模组配置
-    async createSpecialModConfigCluster() {
-      return await sshOperate.createSpecialModConfigCluster()
+    async execSpecialModConfigCluster() {
+      return await sshOperate.execSpecialModConfigCluster()
+    },
+    async subscriptMod(id: string) {
+      // 添加模组订阅
+      await sshOperate.subscriptMod(id)
+      // 启用模组更新专用存档
+      await sshOperate.execSpecialModConfigCluster()
+      // 强制更新模组
+      await this.forceUpdate(id)
     },
   },
 })

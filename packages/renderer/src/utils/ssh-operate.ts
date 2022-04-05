@@ -60,6 +60,10 @@ export const sshOperate = {
     const res = await invoke('gatFileContent', path)
     return res.split('\r\n').filter((mod: string) => !mod.includes('--') && mod.includes('ServerModCollectionSetup')).map((mod: string) => mod.split('\"')[1])
   },
+  async subscriptMod(id: string): Promise<boolean> {
+    const path = 'steamcmd/~/myDSTserver/mods/dedicated_server_mods_setup.lua'
+    return await invoke('supplementContent2File', path, `ServerModSetup("${id}")\n`)
+  },
   // #endregion
 
   // #region 服务器存档相关
@@ -110,8 +114,8 @@ export const sshOperate = {
     return await invoke('echoContent2File', path, config)
   },
   async backupCluster(cluster: string, path: string): Promise<boolean> {
-    await invoke('execCommand', 'mkdir ~/BackupCluster')
     try {
+      await invoke('execCommand', 'mkdir -p ~/BackupCluster')
       await invoke('execCommand', `cd ~/.klei/DoNotStarveTogether && tar -zcvf ./Backup_${cluster}.tar.gz ./${cluster}`)
       await invoke('execCommand', `mv ~/.klei/DoNotStarveTogether/Backup_${cluster}.tar.gz ~/BackupCluster`)
       await invoke('downloadFile', `${path}/Backup_${cluster}.tar.gz`, `/root/BackupCluster/Backup_${cluster}.tar.gz`)
@@ -122,9 +126,6 @@ export const sshOperate = {
     }
   },
   async createCluster(cluster: string, config: ClusterCreateConfig): Promise<void> {
-    await invoke('createDirDirectory', '~/.klei')
-    await invoke('createDirDirectory', '~/.klei/DoNotStarveTogether')
-    await invoke('createDirDirectory', `~/.klei/DoNotStarveTogether/${cluster}`)
     await invoke('createDirDirectory', `~/.klei/DoNotStarveTogether/${cluster}/Master`)
     await invoke('createDirDirectory', `~/.klei/DoNotStarveTogether/${cluster}/Caves`)
     await invoke('echo2File', ini.stringify(config.cluster), `~/.klei/DoNotStarveTogether/${cluster}/cluster.ini`)
@@ -133,11 +134,12 @@ export const sshOperate = {
   },
   async deleteCluster(cluster: string): Promise<boolean> {
     const time = new Date().getTime()
-    // 预先备份，避免小傻瓜直接删了
-    await invoke('execCommand', 'mkdir ~/BackupCluster')
     try {
+      // 预先备份，避免小傻瓜直接删了
+      await invoke('execCommand', 'mkdir -p ~/BackupCluster')
       await invoke('execCommand', `cd ~/.klei/DoNotStarveTogether && tar -zcvf ./Backup_${cluster}_${time}.tar.gz ./${cluster}`)
       await invoke('execCommand', `mv ~/.klei/DoNotStarveTogether/Backup_${cluster}_${time}.tar.gz ~/BackupCluster`)
+      // 删除存档
       await invoke('execCommand', `rm -rf ~/.klei/DoNotStarveTogether/${cluster}`)
       return true
     }
@@ -152,7 +154,7 @@ export const sshOperate = {
    * 执行专门用来升级模组
    * @returns 是否执行成功
    */
-  async createSpecialModConfigCluster(): Promise<boolean> {
+  async execSpecialModConfigCluster(): Promise<boolean> {
     try {
       const clusters = await invoke('getDirectoryList', '~/.klei/DoNotStarveTogether', false)
       if (!clusters.includes('mod_config')) {

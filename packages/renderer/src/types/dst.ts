@@ -12,3 +12,9 @@ export enum QuicklyInstallState {
   SUCCESS = 'success', // 成功 ｜ success 是为了显示按钮状态
   FAIL = 'error', // 失败 ｜ error 是为了显示按钮状态
 }
+// 服务器存档配置类型
+export enum ClusterOptionsType {
+  SELECT, // 选择框
+  INPUT, // 输入框
+  SWITCH, // 开关
+}

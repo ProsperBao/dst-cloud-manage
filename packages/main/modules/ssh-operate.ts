@@ -56,9 +56,15 @@ class SSHOperate {
     return res.stderr === ''
   }
 
+  async supplementContent2File(path: string, content: string): Promise<boolean> {
+    const connection = this.getConnection()
+    const res = await connection.execCommand(`echo '${content}' >> ${path}`)
+    return res.stderr === ''
+  }
+
   async createDirDirectory(path: string): Promise<boolean> {
     const connection = this.getConnection()
-    const res = await connection.execCommand(`mkdir ${path}`)
+    const res = await connection.execCommand(`mkdir -p ${path}`)
     if (res.stdout)
       return true
     else

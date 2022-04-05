@@ -21,6 +21,7 @@ button:
   cancel: 取消
   cluster-backup: 存档备份
   cluster-delete: 删除存档
+  cluster-edit: 存档编辑
   confirm: 确认
   force-refresh: 强制刷新
   manage-mod: 管理模组
@@ -115,6 +116,8 @@ tag:
   max-players: 最大人数
   pvp: 玩家战斗
 title:
+  cluster-add: 添加存档
+  cluster-edit: 编辑存档
   mod-list: 服务器已安装模组
 translate:
   bd-appid: 百度翻译 appid

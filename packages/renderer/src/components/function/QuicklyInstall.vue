@@ -107,7 +107,7 @@ const startInstall = async() => {
   }
   percentage.value = 80
   progressText.value = t('install.init-cluster')
-  if (!await sshOperate.createSpecialModConfigCluster()) {
+  if (!await sshOperate.execSpecialModConfigCluster()) {
     status.value = QuicklyInstallState.FAIL
     return message.error(t('result.init-cluster-fail'))
   }

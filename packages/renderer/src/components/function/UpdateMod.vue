@@ -24,7 +24,7 @@ const loading = ref(false)
 const startUpdate = async() => {
   loading.value = true
   try {
-    await modStore.createSpecialModConfigCluster()
+    await modStore.execSpecialModConfigCluster()
     message.success(t('result.update-mod-success'))
   }
   catch {
